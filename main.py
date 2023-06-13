@@ -190,8 +190,8 @@ async def judge_uid(uid_str, bot, ev):
         return
 
 
-# 每天13点左右自动更新版本号
-@sv.scheduled_job('cron', hour='13', minute='1')
+# 每隔6小时更新一次版本号
+@sv.scheduled_job('interval', minutes=360)
 async def update_ver():
     headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
     headers = get_headers()
