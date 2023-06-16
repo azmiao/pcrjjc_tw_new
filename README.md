@@ -1,3 +1,5 @@
+【06-16更新：暂时不能用】
+
 # pcrjjc_tw_new
 
 本插件是[pcrjjc2](https://github.com/cc004/pcrjjc2/tree/tw)的修改版
