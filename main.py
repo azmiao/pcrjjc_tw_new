@@ -678,7 +678,7 @@ async def on_arena_schedule():
                 async with lck:
                     delete_arena(uid)
                 sv.logger.info(f'已经自动删除错误的uid={info["id"]}')
-        except Exception as _:
+        except Exception as e:
             sv.logger.info(f'对台服{cx}服的{info["id"]}的检查出错' + str(e))
 
 
