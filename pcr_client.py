@@ -92,6 +92,7 @@ class pcr_client:
         with open(header_path, 'r', encoding='UTF-8') as f:
             self.headers = json.load(f)
         self.headers['SID'] = pcr_client._makemd5(viewer_id + udid)
+        # 如果是旧配置服务器就要设置为2，新版需要设置为1
         self.headers['platform'] = '1' if is_new else '2'
 
     @staticmethod

@@ -605,7 +605,7 @@ async def send_p_arena_history(bot, ev):
         await bot.finish(ev, msg, at_sender=True)
 
 
-# 自动推送
+# 自动推送 | 默认周期为3分钟
 @sv.scheduled_job('interval', minutes=3)
 async def on_arena_schedule():
     global cache, root, binds, lck
