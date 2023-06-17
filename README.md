@@ -1,12 +1,23 @@
-#【06-16更新：暂时不能用】
 
-# pcrjjc_tw_new
+# 新版台服竞技场查询插件【pcrjjc_tw_new】
 
-本插件是[pcrjjc2](https://github.com/cc004/pcrjjc2/tree/tw)的修改版
+## 各版本区别
 
-在[pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)基础上简单适配了下2023-05-10后台服合服后的查询，并增加了全局禁用推送功能
+|                                 版本                                 |     说明     |        备注         | 
+|:------------------------------------------------------------------:|:----------:|:-----------------:|
+|          [pcrjjc](https://github.com/lulu666lulu/pcrjjc)           |    初始版本    |      梦开始的地方       | 
+|            [pcrjjc2](https://github.com/cc004/pcrjjc2)             |    重制版     |   适配了各种服（包括台服）    | 
+| [pcrjjc_huannai](https://github.com/SonderXiaoming/pcrjjc_huannai) | pcrjjc2魔改版 |      各种优化和简化      | 
+|         [pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)         |   台服专用版    |     额外支持多服查询      | 
+|    [(当前)pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)    |   台服专用版    | 增加全局禁用推送功能和其他逻辑优化 | 
 
-新开了一个仓库，为的是让pcrjjc3-tw原代码留个档
+## 适配说明
+
+[pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)已经由[2佬](https://github.com/sdyxxjj123)适配了2023-06-15后的台服合服后的竞技场查询，需要使用【新的配置文件】
+
+[(当前)pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)，由[辣鱼佬](https://github.com/layvsan)适配了2023-06-15后的台服合服后的竞技场查询，需要使用【旧的配置文件】
+
+新开了一个仓库，尽量不去动原来的仓库
 
 ## 如何更新
 

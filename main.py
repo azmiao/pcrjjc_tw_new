@@ -12,8 +12,8 @@ from hoshino.util import pic2b64
 
 from .create_img import generate_info_pic, generate_support_pic, _get_cx_name
 from .jjchistory import *
-from .pcrclient import pcrclient, ApiException, get_headers
-from .playerpref import decryptxml
+from .pcr_client import pcr_client, ApiException, get_headers
+from .playerpref import decrypt_xml
 from .safeservice import SafeService
 
 sv_help = '''
@@ -143,14 +143,14 @@ def judge_file(cx_id: int):
 
 # 获取配置文件
 def get_client():
-    ac_info_first = decryptxml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml')) \
+    ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml')) \
         if judge_file(1) else {'admin': ''}
-    client_first = pcrclient(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
-                             ac_info_first['TW_SERVER_ID'], pInfo['proxy']) if judge_file(1) else None
-    ac_info_other = decryptxml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml')) \
+    client_first = pcr_client(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
+                              ac_info_first['TW_SERVER_ID'], pInfo['proxy']) if judge_file(1) else None
+    ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml')) \
         if judge_file(0) else {'admin': ''}
-    client_other = pcrclient(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
-                             ac_info_other['TW_SERVER_ID'], pInfo['proxy']) if judge_file(0) else None
+    client_other = pcr_client(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
+                              ac_info_other['TW_SERVER_ID'], pInfo['proxy']) if judge_file(0) else None
     return client_first, client_other, ac_info_first, ac_info_other
 
 
