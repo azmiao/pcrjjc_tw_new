@@ -71,24 +71,25 @@ class pcrclient:
         return md5((str + 'r!I@nt8e5i=').encode('utf8')).hexdigest()
     
     def __init__(self, udid, short_udid, viewer_id, platform, proxy):
-        
+        viewer_id = platform+viewer_id
         self.viewer_id = viewer_id
-        self.short_udid = short_udid
+        self.short_udid = platform+short_udid
         self.udid = udid
         self.headers = {}
         self.proxy = proxy
-
-        header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
-        with open(header_path, 'r', encoding='UTF-8') as f:
-            defaultHeaders = json.load(f)
+        self.clan_id = 26143
+        self.token = pcrclient.createkey()
         for key in defaultHeaders.keys():
             self.headers[key] = defaultHeaders[key]
 
         self.headers['SID'] = pcrclient._makemd5(viewer_id + udid)
-        self.apiroot = f'https://api{"" if platform == "1" else platform}-pc.so-net.tw'
-        self.headers['platform'] = '1'
-
-        self.shouldLogin = True
+        if platform=='1':
+            self.apiroot = f'https://api-pc.so-net.tw'
+        else:
+            self.apiroot = f'https://api5-pc.so-net.tw'
+        self.headers['platform'] = '2'
+        self.platform = platform
+        self.shouldLogin = False
 
     @staticmethod
     def createkey() -> bytes:
@@ -137,7 +138,7 @@ class pcrclient:
         try:    
             if self.viewer_id is not None:
                 request['viewer_id'] = b64encode(self.encrypt(str(self.viewer_id), key))
-
+                request['tw_server_id'] = str(self.platform)
             packed, crypted = self.pack(request, key)
             self.headers['PARAM'] = sha1((self.udid + apiurl + b64encode(packed).decode('utf8') + str(self.viewer_id)).encode('utf8')).hexdigest()
             self.headers['SHORT-UDID'] = pcrclient._encode(self.short_udid)
