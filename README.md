@@ -63,7 +63,7 @@
 
 ### 如果之前用过pcrjjc3-tw
 
-1. 将原来`pcrjjc3-tw`插件目录下的`account.json`, `binds.json`, `frame.json`, `headers.json` 复制过来
+1. 将原来`pcrjjc3-tw`插件目录下的`account.json`, `binds.json`, `frame.json` 复制过来，不要复制`headers.json`，不要复制`headers.json`，不要复制`headers.json`！
 
 2. 将原来的`xxx_tw.sonet.princessconnect.v2.playerprefs.xml`的配置文件都复制过来，一服的文件改名`first_tw.sonet.princessconnect.v2.playerprefs.xml`，其他服的改名为`other_tw.sonet.princessconnect.v2.playerprefs.xml`
 
