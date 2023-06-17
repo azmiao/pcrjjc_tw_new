@@ -90,7 +90,7 @@ class pcr_client:
         with open(header_path, 'r', encoding='UTF-8') as f:
             self.headers = json.load(f)
         self.headers['SID'] = pcr_client._makemd5(viewer_id + udid)
-        self.headers['platform'] = platform
+        self.headers['platform'] = '2'
 
     @staticmethod
     def create_key() -> bytes:
