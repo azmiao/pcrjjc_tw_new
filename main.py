@@ -157,15 +157,21 @@ def get_true_query_id(ac_info):
 def get_client():
     global first_client_cache, other_client_cache
 
-    ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml')) \
-        if judge_file(1) else {'admin': ''}
-    ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml')) \
-        if judge_file(0) else {'admin': ''}
+    ac_info_first = {'admin': ''}
+    ac_info_other = {'admin': ''}
 
     # 1服
     if first_client_cache is None:
         if judge_file(1):
+            ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
             short_udid_first, viewer_id_first, is_new_first = get_true_query_id(ac_info_first)
+            # 如果是新的就换用key重新unpack
+            if is_new_first:
+                sv.logger.info('当前[台服1服]配置文件使用的是【新版】用户文件')
+                ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'), 'I')
+                short_udid_first, viewer_id_first, is_new_first = get_true_query_id(ac_info_first)
+            else:
+                sv.logger.info('当前[台服1服]配置文件使用的是【旧版】用户文件')
             client_first = pcr_client(ac_info_first['UDID'], short_udid_first, viewer_id_first,
                                       ac_info_first['TW_SERVER_ID'], pInfo['proxy'], is_new_first)
         else:
@@ -175,7 +181,15 @@ def get_client():
     # 其他服
     if other_client_cache is None:
         if judge_file(0):
+            ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
             short_udid_other, viewer_id_other, is_new_other = get_true_query_id(ac_info_other)
+            # 如果是新的就换用key重新unpack
+            if is_new_other:
+                sv.logger.info('当前[台服其他服]配置文件使用的是【新版】用户文件')
+                ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'), 'I')
+                short_udid_other, viewer_id_other, is_new_other = get_true_query_id(ac_info_other)
+            else:
+                sv.logger.info('当前[台服其他服]配置文件使用的是【旧版】用户文件')
             client_other = pcr_client(ac_info_other['UDID'], short_udid_other, viewer_id_other,
                                       ac_info_other['TW_SERVER_ID'], pInfo['proxy'], is_new_other)
         else:

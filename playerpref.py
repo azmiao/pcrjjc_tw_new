@@ -18,7 +18,7 @@ def _dec_val(k, s):
     return bytes([key2[i % len(key2)] ^ b[i] for i in range(len(b))])
 
 
-def decrypt_xml(filename):
+def decrypt_xml(filename, pack_key):
     result = {}
 
     with open(filename, 'r') as fp:
@@ -34,7 +34,7 @@ def decrypt_xml(filename):
         if xml_key == 'UDID':
             val = ''.join([chr(val[4 * i + 6] - 10) for i in range(36)])
         elif len(val) == 4:
-            val = str(unpack('i', val)[0])
+            val = str(unpack(pack_key, val)[0])
         result[xml_key] = val
         # except:
         #    pass
