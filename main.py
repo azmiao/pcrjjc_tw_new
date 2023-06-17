@@ -87,6 +87,10 @@ qLck = Lock()
 # 数据库对象初始化
 jjc_history = JJCHistoryStorage()
 
+# 全局缓存的client登陆 | 减少协议握手次数
+first_client_cache = None
+other_client_cache = None
+
 # ========== ↑ ↑ ↑ 配置读取 ↑ ↑ ↑ ==========
 
 
@@ -141,17 +145,44 @@ def judge_file(cx_id: int):
         return False
 
 
+# 通过判断新字段的有无来判断是否是新配置
+def get_true_query_id(ac_info):
+    short_udid = ac_info['SHORT_UDID_lowBits'] if 'SHORT_UDID_lowBits' in ac_info else ac_info['SHORT_UDID']
+    viewer_id = ac_info['VIEWER_ID_lowBits'] if 'VIEWER_ID_lowBits' in ac_info else ac_info['VIEWER_ID']
+    is_new = True if 'SHORT_UDID_lowBits' in ac_info else False
+    return short_udid, viewer_id, is_new
+
+
 # 获取配置文件
 def get_client():
+    global first_client_cache, other_client_cache
+
     ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml')) \
         if judge_file(1) else {'admin': ''}
-    client_first = pcr_client(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
-                              ac_info_first['TW_SERVER_ID'], pInfo['proxy']) if judge_file(1) else None
     ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml')) \
         if judge_file(0) else {'admin': ''}
-    client_other = pcr_client(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
-                              ac_info_other['TW_SERVER_ID'], pInfo['proxy']) if judge_file(0) else None
-    return client_first, client_other, ac_info_first, ac_info_other
+
+    # 1服
+    if first_client_cache is None:
+        if judge_file(1):
+            short_udid_first, viewer_id_first, is_new_first = get_true_query_id(ac_info_first)
+            client_first = pcr_client(ac_info_first['UDID'], short_udid_first, viewer_id_first,
+                                      ac_info_first['TW_SERVER_ID'], pInfo['proxy'], is_new_first)
+        else:
+            client_first = None
+        first_client_cache = client_first
+
+    # 其他服
+    if other_client_cache is None:
+        if judge_file(0):
+            short_udid_other, viewer_id_other, is_new_other = get_true_query_id(ac_info_other)
+            client_other = pcr_client(ac_info_other['UDID'], short_udid_other, viewer_id_other,
+                                      ac_info_other['TW_SERVER_ID'], pInfo['proxy'], is_new_other)
+        else:
+            client_other = None
+        other_client_cache = client_other
+
+    return first_client_cache, other_client_cache, ac_info_first, ac_info_other
 
 
 async def query(uid):
