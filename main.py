@@ -126,8 +126,11 @@ if os.path.exists(old_config) and not os.path.exists(config):
         bind_data_info['id'] = cx_str + game_id_str
         bind_data[user_id_str] = bind_data_info
     config_data['arena_bind'] = bind_data
+    config_data['global_push'] = True
     with open(config, 'w', encoding='UTF-8') as f:
         json.dump(config_data, f, indent=4, ensure_ascii=False)
+    root = config_data
+    binds = root['arena_bind']
 
 
 # ========== ↑ ↑ ↑ 启动时检查文件 ↑ ↑ ↑ ==========
