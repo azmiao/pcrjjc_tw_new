@@ -473,11 +473,11 @@ pjjc排名：{res['user_info']["grand_arena_rank"]}
 async def on_query_arena_all(bot, ev):
     global binds, lck
     id_str = str(ev.message)
+    user_id = str(ev['user_id'])
 
     async with lck:
         if not id_str:
             # 没有输入UID
-            user_id = str(ev['user_id'])
             if user_id not in binds:
                 await bot.send(ev, '您还未绑定竞技场', at_sender=True)
                 return
