@@ -140,7 +140,6 @@ class pcr_client:
         try:
             if self.viewer_id is not None:
                 request['viewer_id'] = b64encode(self.encrypt(str(self.viewer_id), key))
-            if not self.is_new:
                 request['tw_server_id'] = str(self.platform)
             packed, crypto = self.pack(request, key)
             self.headers['PARAM'] = sha1(
