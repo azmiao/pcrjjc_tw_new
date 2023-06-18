@@ -75,12 +75,8 @@ class pcr_client:
     def _makemd5(data_str) -> str:
         return md5((data_str + 'r!I@nt8e5i=').encode('utf8')).hexdigest()
 
-    def __init__(self, udid, short_udid, viewer_id, platform, proxy, is_new):
-        # 如果是旧配置ID就需要加上服务器编号
-        viewer_id = viewer_id if is_new else platform + viewer_id
-        # 如果是旧配置short_udid就需要加上服务器编号
-        self.short_udid = short_udid if is_new else platform + short_udid
-        self.is_new = is_new
+    def __init__(self, udid, short_udid, viewer_id, platform, proxy):
+        self.short_udid = short_udid 
         self.viewer_id = viewer_id
         self.udid = udid
         self.proxy = proxy
@@ -93,7 +89,7 @@ class pcr_client:
             self.headers = json.load(f)
         self.headers['SID'] = pcr_client._makemd5(viewer_id + udid)
         # 如果是旧配置服务器就要设置为2，新版需要设置为1
-        self.headers['platform'] = '1' if is_new else '2'
+        self.headers['platform'] = 2
 
     @staticmethod
     def create_key() -> bytes:
