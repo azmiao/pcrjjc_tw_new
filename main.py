@@ -157,7 +157,7 @@ def get_client():
     # 1服
     if first_client_cache is None:
         if judge_file(1):
-            ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
+            ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_first = pcr_client(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
                                       ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
         else:
@@ -167,7 +167,7 @@ def get_client():
     # 其他服
     if other_client_cache is None:
         if judge_file(0):
-            ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
+            ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_other = pcr_client(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
                                       ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
         else:
