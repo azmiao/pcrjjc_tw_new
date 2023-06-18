@@ -2,14 +2,10 @@ from urllib.parse import unquote
 from re import finditer
 from base64 import b64decode
 from struct import unpack
-
 key = b'e806f6'
-
-
-def _dec_key(s) -> bytes:
+def _dec_key(s) -> str:
     b = b64decode(unquote(s))
     return bytes([key[i % len(key)] ^ b[i] for i in range(len(b))])
-
 
 def _dec_val(k, s):
     b = b64decode(unquote(s))
@@ -17,8 +13,7 @@ def _dec_val(k, s):
     b = b[0:len(b) - (11 if b[-5] != 0 else 7)]
     return bytes([key2[i % len(key2)] ^ b[i] for i in range(len(b))])
 
-
-def decrypt_xml(filename):
+def decryptxml(filename):
     result = {}
 
     with open(filename, 'r') as fp:
@@ -26,10 +21,10 @@ def decrypt_xml(filename):
     for re in finditer(r'<string name="(.*)">(.*)</string>', content):
         g = re.groups()
         try:
-            key = _deckey(g[0]).decode('utf8')
+            key = _dec_key(g[0]).decode('utf8')
+            val = _dec_val(key, g[1])
         except:
             continue
-        val = _decval(key, g[1])
         if key == 'UDID':
             val = ''.join([chr(val[4 * i + 6] - 10) for i in range(36)])
         elif key == 'SHORT_UDID_lowBits':
@@ -48,3 +43,5 @@ def decrypt_xml(filename):
     if len(result['SHORT_UDID'])==9:
         result['SHORT_UDID'] = result['TW_SERVER_ID']+result['SHORT_UDID']
     return result
+    
+    
