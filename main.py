@@ -147,15 +147,6 @@ def judge_file(cx_id: int):
     else:
         return False
 
-
-# 通过判断新字段的有无来判断是否是新配置
-def get_true_query_id(ac_info):
-    short_udid = ac_info['SHORT_UDID_lowBits'] if 'SHORT_UDID_lowBits' in ac_info else ac_info['SHORT_UDID']
-    viewer_id = ac_info['VIEWER_ID_lowBits'] if 'VIEWER_ID_lowBits' in ac_info else ac_info['VIEWER_ID']
-    is_new = True if 'SHORT_UDID_lowBits' in ac_info else False
-    return short_udid, viewer_id, is_new
-
-
 # 获取配置文件
 def get_client():
     global first_client_cache, other_client_cache
@@ -167,16 +158,8 @@ def get_client():
     if first_client_cache is None:
         if judge_file(1):
             ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
-            short_udid_first, viewer_id_first, is_new_first = get_true_query_id(ac_info_first)
-            # 如果是新的就换用key重新unpack
-            if is_new_first:
-                sv.logger.info('当前[台服1服]配置文件使用的是【新版】用户文件')
-                ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'), 'I')
-                short_udid_first, viewer_id_first, is_new_first = get_true_query_id(ac_info_first)
-            else:
-                sv.logger.info('当前[台服1服]配置文件使用的是【旧版】用户文件')
-            client_first = pcr_client(ac_info_first['UDID'], short_udid_first, viewer_id_first,
-                                      ac_info_first['TW_SERVER_ID'], pInfo['proxy'], is_new_first)
+            client_first = pcr_client(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
+                                      ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
         else:
             client_first = None
         first_client_cache = client_first
@@ -185,16 +168,8 @@ def get_client():
     if other_client_cache is None:
         if judge_file(0):
             ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'), 'i')
-            short_udid_other, viewer_id_other, is_new_other = get_true_query_id(ac_info_other)
-            # 如果是新的就换用key重新unpack
-            if is_new_other:
-                sv.logger.info('当前[台服其他服]配置文件使用的是【新版】用户文件')
-                ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'), 'I')
-                short_udid_other, viewer_id_other, is_new_other = get_true_query_id(ac_info_other)
-            else:
-                sv.logger.info('当前[台服其他服]配置文件使用的是【旧版】用户文件')
-            client_other = pcr_client(ac_info_other['UDID'], short_udid_other, viewer_id_other,
-                                      ac_info_other['TW_SERVER_ID'], pInfo['proxy'], is_new_other)
+            client_other = pcr_client(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
+                                      ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
         else:
             client_other = None
         other_client_cache = client_other
