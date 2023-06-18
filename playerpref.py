@@ -13,7 +13,7 @@ def _dec_val(k, s):
     b = b[0:len(b) - (11 if b[-5] != 0 else 7)]
     return bytes([key2[i % len(key2)] ^ b[i] for i in range(len(b))])
 
-def decryptxml(filename):
+def decrypt_xml(filename):
     result = {}
 
     with open(filename, 'r') as fp:
