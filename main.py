@@ -178,6 +178,7 @@ def get_client():
     return first_client_cache, other_client_cache, ac_info_first, ac_info_other
 
 
+# 查询个人信息
 async def query(uid):
     client_first, client_other, _, _ = get_client()
     cur_client = client_first if uid.startswith('1') else client_other
@@ -432,8 +433,8 @@ async def on_query_arena(bot, ev):
             msg = f'''
 区服：{cx_name}
 昵称：{res['user_info']["user_name"]}
-jjc排名：{res['user_info']["arena_rank"]}
-pjjc排名：{res['user_info']["grand_arena_rank"]}
+jjc排名：{res['user_info']["arena_rank"]}  ({res['user_info']["arena_group"]}场)
+pjjc排名：{res['user_info']["grand_arena_rank"]}  ({res['user_info']["grand_arena_group"]}场)
 最后登录：{last_login_str}'''.strip()
 
             await bot.send(ev, msg, at_sender=False)

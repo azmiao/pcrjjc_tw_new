@@ -188,13 +188,15 @@ async def generate_info_pic(data, cx, uid):
     draw.text((550 - w, 984), tower_cleared_ex_quest_count_text,
               font_black, font_resize)
 
-    viewer_id_arr = _cut_str(_traditional_to_simplified(
-        data["user_info"]["viewer_id"]), 3)
+    simplified = _traditional_to_simplified(data["user_info"]["viewer_id"])
+    cx = simplified[:1]
+    viewer_id_arr = _cut_str(simplified[1:9], 3)
 
     w, h = font.getsize(
-        viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2])
+        cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2])
     draw.text((138 + (460 - 138) / 2 - w / 2, 1058),
-              viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2], (255, 255, 255, 255), font)
+              cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2],
+              (255, 255, 255, 255), font)
 
     return im
 
