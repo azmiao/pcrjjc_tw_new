@@ -1,16 +1,16 @@
-from msgpack import packb, unpackb
-from random import randint
+import json
+import os
+from base64 import b64encode, b64decode
 from hashlib import md5, sha1
+from random import choice
+from random import randint
+
+import requests
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
-from base64 import b64encode, b64decode
-from random import choice
 from bs4 import BeautifulSoup
-import requests
-import os
-import json
-
 from hoshino.aiorequests import post
+from msgpack import packb, unpackb
 
 # 读取代理配置
 with open(os.path.join(os.path.dirname(__file__), 'account.json')) as fp:

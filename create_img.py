@@ -1,11 +1,12 @@
-from PIL import Image, ImageDraw, ImageFont, ImageColor
-from ..priconne import chara
+import json
 import time
 from pathlib import Path
+
 import zhconv
-import json
-from hoshino.aiorequests import run_sync_func
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 from hoshino import util
+
+from ..priconne import chara
 
 path = Path(__file__).parent  # 获取文件所在目录的绝对路径
 font_cn_path = str(path / 'fonts' / 'SourceHanSansCN-Medium.otf')  # Path是路径对象，必须转为str之后ImageFont才能读取
