@@ -1,8 +1,6 @@
 
 # 新版台服竞技场查询插件【pcrjjc_tw_new】
 
-# ！！！注意：当前为测试版，未经完全测试！！！
-
 ## 各版本区别
 
 |                                 版本                                 |     说明     |       备注        | 
@@ -136,8 +134,13 @@
 | @BOT全局禁用竞技场推送 |         禁用所有推送功能(仅限维护组)         |
 |  @BOT清空竞技场订阅  |        清空所有绑定的账号(仅限维护组)         |
 
-## 来自电线佬的详细查询图片预览
+## 来自[电线佬](https://github.com/CYDXDianXian)的详细查询图片预览
+
+<details>
+<summary>点击查看图片</summary>
 
 ![4@{%Z%591B` YE1%}H0E7@1](https://user-images.githubusercontent.com/71607036/154960896-1d183705-0805-4f80-9cf2-6de13d35c5c3.jpg)
 
 ![FQ~} OTM$L20L6DAEI~RN`K](https://user-images.githubusercontent.com/71607036/154960912-6fd4f1fb-df38-4ef6-997c-af01b71810f4.PNG)
+
+</details>
