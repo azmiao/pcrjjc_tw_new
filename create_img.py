@@ -190,7 +190,7 @@ async def generate_info_pic(data, cx, uid):
 
     simplified = _traditional_to_simplified(data["user_info"]["viewer_id"])
     cx = simplified[:1]
-    viewer_id_arr = _cut_str(simplified[1:9], 3)
+    viewer_id_arr = _cut_str(simplified[1:], 3)
 
     w, h = font.getsize(
         cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2])
