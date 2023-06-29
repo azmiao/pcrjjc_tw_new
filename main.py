@@ -185,6 +185,10 @@ async def query(uid):
     if cur_client is None:
         return {'lack share_prefs': {}}
     async with qLck:
+        try:
+            await cur_client.callapi('/load/index', {'carrier': 'Android'})
+        except ApiException as _:
+            sv.logger.error('登录超时或失败，将尝试一次重新登录，正在重新登录...')
         while cur_client.shouldLogin:
             await cur_client.login()
         res = (await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)}))

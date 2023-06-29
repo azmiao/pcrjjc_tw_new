@@ -29,16 +29,16 @@
 
 ## 更新日志
 
+2023-06-29  v1.0.0   优化查询逻辑
+
 2023-06-19  v0.0.3-beta 简化代码，[PR #5](https://github.com/azmiao/pcrjjc_tw_new/pull/5)
 
 2023-06-17  v0.0.2-beta 适配新版台服竞技场查询，感谢各位大佬
 
-2023-05-10  v0.0.1-beta 测试版本
-
 <details>
 <summary>更以前的更新日志</summary>
 
-（无）
+2023-05-10  v0.0.1-beta 测试版本
 
 </details>
 
