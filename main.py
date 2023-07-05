@@ -223,10 +223,13 @@ async def judge_uid(uid_str, bot, ev):
 @sv.scheduled_job('interval', minutes=360)
 async def update_ver():
     headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
-    headers = get_headers()
-    with open(headers_path, 'w', encoding='UTF-8') as file:
-        json.dump(headers, file, indent=4, ensure_ascii=False)
-    sv.logger.info(f'pcrjjc_tw_new的游戏版本已更新至最新')
+    try:
+        headers = get_headers()
+        with open(headers_path, 'w', encoding='UTF-8') as file:
+            json.dump(headers, file, indent=4, ensure_ascii=False)
+        sv.logger.info(f'pcrjjc_tw_new的游戏版本已更新至最新')
+    except Exception as e:
+        sv.logger.error(f'pcrjjc_tw_new更新版本号的时候出现错误：' + str(e))
 
 
 # ========== ↑ ↑ ↑ 读取 & 校验 ↑ ↑ ↑ ==========
