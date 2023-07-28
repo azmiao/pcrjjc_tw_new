@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 from random import choice
@@ -46,21 +47,24 @@ def get_headers():
 # 获取版本号
 def get_ver():
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.37',
-        'Referer': 'https://apk-dl.com',
-        'Origin': 'https://apk-dl.com',
-        'Accept': '*/*',
-        'Connection': 'keep-alive',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,'
+                  'application/signed-exchange;v=b3;q=0.7',
         'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'Cache-Control': 'max-age=0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.183',
+        'Upgrade-Insecure-Requests': '1',
+        'Pragma': 'no-cache'
     }
-    app_url = 'https://apk-dl.com/tw.sonet.princessconnect'
+    app_url = 'https://play.google.com/store/apps/details?id=tw.sonet.princessconnect'
+    print(f'url = {app_url}')
     app_res = requests.get(app_url, headers=headers, timeout=15, proxies=p_info['proxy'])
     soup = BeautifulSoup(app_res.text, 'lxml')
-    ver_tmp = soup.find('span', {"class": "version"})
-    app_ver = ver_tmp.text.strip()
-    return str(app_ver)
+    ver_tmp_list = soup.findAll('script', text=re.compile(r'.+超異域公主連結！Re:Dive.+'))
+    ver_str = str(ver_tmp_list[-1])
+    ver_group = re.search(r'"您可以要求开发者删除数据".+\[\[\["(.+?)"]]', ver_str)
+    return ver_group.group(1)
 
 
 class ApiException(Exception):
