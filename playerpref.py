@@ -45,13 +45,54 @@ def decrypt_xml(filename):
         elif len(val) == 4:
             val = str(unpack('i', val)[0])
         result[xml_key] = val
-    # 如果是旧版配置文件 | 需要加上服务器编号
-    server_name = '[台服1服]' if str(result['TW_SERVER_ID']) == '1' else '[台服其他服]'
-    version = '【旧版】' if len(result['VIEWER_ID']) == 9 else '【新版】'
-    logger.info('当前' + server_name + '账号配置文件使用的是' + version + '用户文件')
 
-    if len(result['VIEWER_ID']) == 9:
+    # 不同服务器
+    server_name = '[台服1服]' if str(result['TW_SERVER_ID']) == '1' else '[台服其他服]'
+    # 不同版本
+    add_msg = ''
+    if len(result['VIEWER_ID']) == 9 and 'VIEWER_ID_highBits' not in result:
+        # 最老的版本
+        version = '【旧版】'
         result['VIEWER_ID'] = result['TW_SERVER_ID'] + result['VIEWER_ID']
-    if len(result['SHORT_UDID']) == 9:
         result['SHORT_UDID'] = result['TW_SERVER_ID'] + result['SHORT_UDID']
+    elif len(result['VIEWER_ID']) == 10 and result['VIEWER_ID_highBits'] == '0':
+        # v4.0.0+版本 | 2023-05-10更新后
+        version = '【新版V1】'
+    elif result['VIEWER_ID_highBits'] == '1':
+        # v4.0.2+版本 | 2023-07-20更新后
+        version = '【新版V2】'
+        result['VIEWER_ID'] = encode_high_bit(result['VIEWER_ID'], result['TW_SERVER_ID'])
+    elif result['SHORT_UDID_highBits'] == '1':
+        # v4.0.2+版本 | 2023-07-20更新后
+        version = '【新版V2】'
+        result['SHORT_UDID'] = encode_high_bit(result['SHORT_UDID'], result['TW_SERVER_ID'])
+    else:
+        version = '【未适配的新版本】'
+        add_msg = '，请反馈至 Github Issue 进行适配'
+
+    logger.info('当前' + server_name + '账号配置文件使用的是' + version + '用户文件' + add_msg)
+
     return result
+
+
+# 高位补足简易算法
+def encode_high_bit(id_str, server):
+    old_id = int(id_str)
+    server_old_id = int(server)
+
+    # 转二进制
+    server_id = bin(server_old_id).replace('0b', '')
+    bin_id = bin(old_id).replace('0b', '')
+
+    # 补位
+    diff = 30 - len(bin_id)
+
+    new_id = server_id
+    for i in range(diff):
+        new_id += '0'
+
+    new_id += bin_id
+
+    # 转回10进值
+    dec_from_bin = int(new_id, 2)
+    return str(dec_from_bin)
