@@ -50,7 +50,7 @@ def decrypt_xml(filename):
     server_name = '[台服1服]' if str(result['TW_SERVER_ID']) == '1' else '[台服其他服]'
     # 不同版本
     add_msg = ''
-    if len(result['VIEWER_ID']) == 9 and 'VIEWER_ID_highBits' not in result:
+    if len(result['VIEWER_ID']) == 9 and ('VIEWER_ID_highBits' not in result or result['VIEWER_ID_highBits'] == '0'):
         # 最老的版本
         version = '【旧版】'
         result['VIEWER_ID'] = result['TW_SERVER_ID'] + result['VIEWER_ID']
