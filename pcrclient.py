@@ -63,7 +63,7 @@ def get_ver():
     soup = BeautifulSoup(app_res.text, 'lxml')
     ver_tmp_list = soup.findAll('script', text=re.compile(r'.+超異域公主連結！Re:Dive.+'))
     ver_str = str(ver_tmp_list[-1])
-    ver_group = re.search(r'"您可以要求开发者删除数据".+\[\[\["(.+?)"]]', ver_str)
+    ver_group = re.search(r'"数据无法删除".+\[\[\["(.+?)"]]', ver_str)
     return ver_group.group(1)
 
 
@@ -73,7 +73,7 @@ class ApiException(Exception):
         self.code = code
 
 
-class pcr_client:
+class PcrClient:
 
     @staticmethod
     def _makemd5(data_str) -> str:
@@ -91,7 +91,7 @@ class pcr_client:
         header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
         with open(header_path, 'r', encoding='UTF-8') as f:
             self.headers = json.load(f)
-        self.headers['SID'] = pcr_client._makemd5(viewer_id + udid)
+        self.headers['SID'] = PcrClient._makemd5(viewer_id + udid)
         # 手机类型：苹果/安卓
         self.headers['platform'] = '2'
 
@@ -131,15 +131,15 @@ class pcr_client:
     @staticmethod
     def _encode(dat: str) -> str:
         return f'{len(dat):0>4x}' + ''.join(
-            [(chr(ord(dat[int(i / 4)]) + 10) if i % 4 == 2 else choice(pcr_client.alphabet)) for i in
-             range(0, len(dat) * 4)]) + pcr_client._iv_string()
+            [(chr(ord(dat[int(i / 4)]) + 10) if i % 4 == 2 else choice(PcrClient.alphabet)) for i in
+             range(0, len(dat) * 4)]) + PcrClient._iv_string()
 
     @staticmethod
     def _iv_string() -> str:
-        return ''.join([choice(pcr_client.alphabet) for _ in range(32)])
+        return ''.join([choice(PcrClient.alphabet) for _ in range(32)])
 
     async def callapi(self, api_url: str, request: dict, noerr: bool = False):
-        key = pcr_client.create_key()
+        key = PcrClient.create_key()
 
         try:
             if self.viewer_id is not None:
@@ -149,7 +149,7 @@ class pcr_client:
             self.headers['PARAM'] = sha1(
                 (self.udid + api_url + b64encode(packed).decode('utf8') + str(self.viewer_id)).encode(
                     'utf8')).hexdigest()
-            self.headers['SHORT-UDID'] = pcr_client._encode(self.short_udid)
+            self.headers['SHORT-UDID'] = PcrClient._encode(self.short_udid)
 
             resp = await post(self.api_root + api_url,
                               data=crypto,

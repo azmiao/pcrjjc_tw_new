@@ -12,7 +12,7 @@ from hoshino.util import pic2b64
 
 from .create_img import generate_info_pic, generate_support_pic, _get_cx_name
 from .jjchistory import *
-from .pcr_client import pcr_client, ApiException, get_headers
+from .pcrclient import PcrClient, ApiException, get_headers
 from .playerpref import decrypt_xml
 from .safeservice import SafeService
 
@@ -159,8 +159,8 @@ def get_client():
     if first_client_cache is None:
         if judge_file(1):
             ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
-            client_first = pcr_client(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
-                                      ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
+            client_first = PcrClient(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
+                                     ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
         else:
             client_first = None
         first_client_cache = client_first
@@ -169,8 +169,8 @@ def get_client():
     if other_client_cache is None:
         if judge_file(0):
             ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
-            client_other = pcr_client(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
-                                      ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
+            client_other = PcrClient(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
+                                     ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
         else:
             client_other = None
         other_client_cache = client_other
