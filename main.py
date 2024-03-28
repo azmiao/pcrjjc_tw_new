@@ -12,7 +12,7 @@ from hoshino.util import pic2b64
 
 from .create_img import generate_info_pic, generate_support_pic, _get_cx_name
 from .jjchistory import *
-from .pcrclient import PcrClient, ApiException, get_headers
+from .pcrclient import PcrClient, ApiException, default_headers
 from .playerpref import decrypt_xml
 from .safeservice import SafeService
 
@@ -96,10 +96,9 @@ other_client_cache = None
 
 # ========== ↓ ↓ ↓ 启动时检查文件 ↓ ↓ ↓ ==========
 
-# headers文件
+# 生成一份旧版headers文件
 header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
 if not os.path.exists(header_path):
-    default_headers = get_headers()
     with open(header_path, 'w', encoding='UTF-8') as f:
         json.dump(default_headers, f, indent=4, ensure_ascii=False)
 
@@ -219,19 +218,6 @@ async def judge_uid(uid_str, bot, ev):
         return
 
 
-# 每隔6小时更新一次版本号
-@sv.scheduled_job('interval', minutes=360)
-async def update_ver():
-    headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
-    try:
-        headers = get_headers()
-        with open(headers_path, 'w', encoding='UTF-8') as file:
-            json.dump(headers, file, indent=4, ensure_ascii=False)
-        sv.logger.info(f'pcrjjc_tw_new的游戏版本已更新至最新')
-    except Exception as e:
-        sv.logger.error(f'pcrjjc_tw_new更新版本号的时候出现错误：' + str(e))
-
-
 # ========== ↑ ↑ ↑ 读取 & 校验 ↑ ↑ ↑ ==========
 
 
@@ -301,6 +287,36 @@ async def disable_all_push(bot, ev):
         with open(config, 'w') as file:
             dump(root, file, indent=4)
         await bot.send(ev, f'已全局禁用竞技场推送！')
+
+
+# 手动更新版本号
+@sv.on_prefix('手动更新竞技场版本号', only_to_me=True)
+async def update_ver(bot, ev):
+    global lck, first_client_cache, other_client_cache
+    async with lck:
+        if not priv.check_priv(ev, priv.SUPERUSER):
+            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
+            return
+        try:
+            headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
+            default_headers['APP-VER'] = str(ev.message).strip()
+            with open(headers_path, 'w', encoding='UTF-8') as file:
+                json.dump(default_headers, file, indent=4, ensure_ascii=False)
+            # 清理缓存
+            first_client_cache = None
+            other_client_cache = None
+            await bot.send(ev, f'pcrjjc_tw_new的游戏版本已更新至{str(ev.message).strip()}')
+        except Exception as e:
+            sv.logger.error(f'pcrjjc_tw_new手动更新版本号的时候出现错误：' + str(e))
+
+
+# 查询版本号
+@sv.on_fullmatch('查询竞技场版本号')
+async def update_ver(bot, ev):
+    headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
+    with open(headers_path, 'r', encoding='UTF-8') as file:
+        headers = json.load(file)
+    await bot.send(ev, f'pcrjjc_tw_new的游戏版本为{headers.get("APP-VER", "")}')
 
 
 # ========== ↑ ↑ ↑ 维护组功能 ↑ ↑ ↑ ==========

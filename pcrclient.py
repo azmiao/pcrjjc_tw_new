@@ -1,15 +1,12 @@
 import json
 import os
-import re
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 from random import choice
 from random import randint
 
-import requests
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
-from bs4 import BeautifulSoup
 from hoshino.aiorequests import post
 from msgpack import packb, unpackb
 
@@ -18,53 +15,27 @@ with open(os.path.join(os.path.dirname(__file__), 'account.json')) as fp:
     p_info = json.load(fp)
 
 
-# 获取headers
-def get_headers():
-    app_ver = get_ver()
-    default_headers = {
-        'Accept-Encoding': 'deflate, gzip',
-        'User-Agent': 'UnityPlayer/2021.3.20f1 (UnityWebRequest/1.0, libcurl/7.84.0-DEV)',
-        'Content-Type': 'application/octet-stream',
-        'Expect': '100-continue',
-        'X-Unity-Version': '2021.3.20f1',
-        'APP-VER': app_ver,
-        'BATTLE-LOGIC-VERSION': '4',
-        'BUNDLE-VER': '',
-        'DEVICE': '2',
-        'DEVICE-ID': '7b1703a5d9b394e24051d7a5d4818f17',
-        'DEVICE-NAME': 'OPPO PCRM00',
-        'GRAPHICS-DEVICE-NAME': 'Adreno (TM) 640',
-        'IP-ADDRESS': '10.0.2.15',
-        'KEYCHAIN': '',
-        'LOCALE': 'Jpn',
-        'PLATFORM-OS-VERSION': 'Android OS 5.1.1 / API-22 (LMY48Z/rel.se.infra.20200612.100533)',
-        'REGION-CODE': '',
-        'RES-VER': '00150001'
-    }
-    return default_headers
-
-
-# 获取版本号
-def get_ver():
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,'
-                  'application/signed-exchange;v=b3;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-        'Cache-Control': 'max-age=0',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.183',
-        'Upgrade-Insecure-Requests': '1',
-        'Pragma': 'no-cache'
-    }
-    app_url = 'https://play.google.com/store/apps/details?id=tw.sonet.princessconnect'
-    print(f'url = {app_url}')
-    app_res = requests.get(app_url, headers=headers, timeout=15, proxies=p_info['proxy'])
-    soup = BeautifulSoup(app_res.text, 'lxml')
-    ver_tmp_list = soup.findAll('script', text=re.compile(r'.+超異域公主連結！Re:Dive.+'))
-    ver_str = str(ver_tmp_list[-1])
-    ver_group = re.search(r'"数据无法删除".+\[\[\["(.+?)"]]', ver_str)
-    return ver_group.group(1)
+# 默认headers
+default_headers = {
+    'Accept-Encoding': 'deflate, gzip',
+    'User-Agent': 'UnityPlayer/2021.3.20f1 (UnityWebRequest/1.0, libcurl/7.84.0-DEV)',
+    'Content-Type': 'application/octet-stream',
+    'Expect': '100-continue',
+    'X-Unity-Version': '2021.3.20f1',
+    'APP-VER': '4.4.0',
+    'BATTLE-LOGIC-VERSION': '4',
+    'BUNDLE-VER': '',
+    'DEVICE': '2',
+    'DEVICE-ID': '7b1703a5d9b394e24051d7a5d4818f17',
+    'DEVICE-NAME': 'OPPO PCRM00',
+    'GRAPHICS-DEVICE-NAME': 'Adreno (TM) 640',
+    'IP-ADDRESS': '10.0.2.15',
+    'KEYCHAIN': '',
+    'LOCALE': 'Jpn',
+    'PLATFORM-OS-VERSION': 'Android OS 5.1.1 / API-22 (LMY48Z/rel.se.infra.20200612.100533)',
+    'REGION-CODE': '',
+    'RES-VER': '00150001'
+}
 
 
 class ApiException(Exception):
