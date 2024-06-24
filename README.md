@@ -5,11 +5,11 @@
 
 |                                 版本                                 |     说明     |       备注        | 
 |:------------------------------------------------------------------:|:----------:|:---------------:|
-|          [pcrjjc](https://github.com/lulu666lulu/pcrjjc)           |    初始版本    |     梦开始的地方      | 
-|            [pcrjjc2](https://github.com/cc004/pcrjjc2)             | pcrjjc重制版  |  适配了各种服（包括台服）   | 
-| [pcrjjc_huannai](https://github.com/SonderXiaoming/pcrjjc_huannai) | pcrjjc2魔改版 |     各种优化和简化     | 
+|   [(当前) pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)    |   台服专用版    | 增加全局禁用推送功能和各种优化 | 
 |         [pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)         |   台服专用版    |    额外支持多服查询     | 
-|    [(当前)pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)    |   台服专用版    | 增加全局禁用推送功能和各种优化 | 
+| [pcrjjc_huannai](https://github.com/SonderXiaoming/pcrjjc_huannai) | pcrjjc2魔改版 |     各种优化和简化     |
+|            [pcrjjc2](https://github.com/cc004/pcrjjc2)             | pcrjjc重制版  |  适配了各种服（包括台服）   | 
+|          [pcrjjc](https://github.com/lulu666lulu/pcrjjc)           |    初始版本    |     梦开始的地方      |
 
 ## 台服合服后的适配说明
 
@@ -18,6 +18,8 @@
 #### 感谢【[2佬](https://github.com/sdyxxjj123)】适配了【新版V1】账号配置文件的查询(2023-05-10更新后)
 
 #### 感谢【[辣鱼佬](https://github.com/layvsan)】适配了【旧版】账号配置文件的查询
+
+#### 感谢【[电线佬](https://github.com/CYDXDianXian)】提供了非常多的更新和优化以及图片设计
 
 #### 感谢其他用爱发电的各位大佬的鼎力相助
 
@@ -30,6 +32,8 @@
 > ✨自动识别新版和旧版的账号配置文件，可以同时兼容查询✨
 
 ## 更新日志
+
+2024-06-24  v1.2.0   详细查询新增深域相关的查询图片，可见最下方图片预览，但公主骑士等级由于计算公式暂未解包，因此暂不可用
 
 2024-03-28  v1.1.2   由于谷歌页面经常变化，去除自动更新版本号，改为手动使用命令更新
 
@@ -144,13 +148,17 @@
 |     @BOT清空竞技场订阅      |        清空所有绑定的账号(仅限维护组)         |
 | @BOT手动更新竞技场版本号 4.4.0 |       手动将版本号更新至某版本(仅限维护组)       |
 
-## 来自[电线佬](https://github.com/CYDXDianXian)的详细查询图片预览
+## 详细查询图片预览
+
+### 这里现在用的是我自己的号截图，主图和支援图是由[电线佬](https://github.com/CYDXDianXian)设计的代码，非常感谢！！！
 
 <details>
 <summary>点击查看图片</summary>
 
-![4@{%Z%591B` YE1%}H0E7@1](https://user-images.githubusercontent.com/71607036/154960896-1d183705-0805-4f80-9cf2-6de13d35c5c3.jpg)
+![主图](https://raw.githubusercontent.com/azmiao/pcrjjc_tw_new/main/readme_img/%E4%B8%BB%E5%9B%BE.PNG)
 
-![FQ~} OTM$L20L6DAEI~RN`K](https://user-images.githubusercontent.com/71607036/154960912-6fd4f1fb-df38-4ef6-997c-af01b71810f4.PNG)
+![支援图](https://raw.githubusercontent.com/azmiao/pcrjjc_tw_new/main/readme_img/%E6%94%AF%E6%8F%B4%E5%9B%BE.PNG)
+
+![深域图](https://raw.githubusercontent.com/azmiao/pcrjjc_tw_new/main/readme_img/%E6%B7%B1%E5%9F%9F%E5%9B%BE.PNG)
 
 </details>

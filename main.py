@@ -10,7 +10,7 @@ from hoshino import priv, get_bot, get_self_ids
 from hoshino.typing import NoticeSession, MessageSegment
 from hoshino.util import pic2b64
 
-from .create_img import generate_info_pic, generate_support_pic, _get_cx_name
+from .create_img import generate_info_pic, generate_support_pic, _get_cx_name, generate_talent_pic
 from .jjchistory import *
 from .pcrclient import PcrClient, ApiException, default_headers
 from .playerpref import decrypt_xml
@@ -505,8 +505,11 @@ async def on_query_arena_all(bot, ev):
             result_support = await generate_support_pic(res, user_id)
             result_support = pic2b64(result_support)  # 转base64发送，不用将图片存本地
             result_support = MessageSegment.image(result_support)
+            talent_image = await generate_talent_pic(res)
+            talent_image = pic2b64(talent_image)  # 转base64发送，不用将图片存本地
+            talent_image = MessageSegment.image(talent_image)
             sv.logger.info('竞技场查询图片已准备完毕！')
-            await bot.send(ev, f"{str(result_image)}\n{result_support}", at_sender=True)
+            await bot.send(ev, f"{str(result_image)}\n{result_support}\n{talent_image}", at_sender=True)
 
         except ApiException as e:
             await bot.send(ev, f'查询出错，{e}', at_sender=True)
