@@ -322,7 +322,7 @@ async def update_ver(bot, ev):
 
 
 # 自动更新解包数据
-@sv.scheduled_job('cron', id='daily_rank_exp_res', day=f'1/1', hour='1/1', minute='1/1')
+@sv.scheduled_job('cron', id='daily_rank_exp_res', day=f'1/1', hour='2', minute='30')
 async def update_rank_exp():
     await download_file(
         'rank_exp.csv',
