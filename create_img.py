@@ -6,6 +6,7 @@ import zhconv
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 from hoshino import util
 
+from .res_parse import read_knight_exp_rank
 from ..priconne import chara
 
 path = Path(__file__).parent  # 获取文件所在目录的绝对路径
@@ -366,6 +367,7 @@ async def generate_talent_pic(data):
     bbox = (701, 849)
     im.paste(im=knight_img, box=bbox, mask=knight_img)
     quest_draw.text(xy=(716, 860), text='公主骑士等级', font=fnt, fill=rgb_w)
-    quest_draw.text(xy=(1080, 858), text='(暂时无法计算)', font=fnt, fill=rgb)  # TODO 暂时无计算公式
+    knight_rank = await read_knight_exp_rank('rank_exp.csv', knight_exp)
+    quest_draw.text(xy=(1080, 858), text=str(knight_rank), font=fnt, fill=rgb)
 
     return im

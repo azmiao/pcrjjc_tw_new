@@ -10,11 +10,6 @@ from Crypto.Util.Padding import unpad, pad
 from hoshino.aiorequests import post
 from msgpack import packb, unpackb
 
-# 读取代理配置
-with open(os.path.join(os.path.dirname(__file__), 'account.json')) as fp:
-    p_info = json.load(fp)
-
-
 # 默认headers
 default_headers = {
     'Accept-Encoding': 'deflate, gzip',

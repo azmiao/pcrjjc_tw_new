@@ -3,3 +3,4 @@ nonebot~=1.8.4
 Pillow~=9.0.1
 pycryptodome~=3.14.1
 zhconv~=1.4.3
+pandas~=2.0.3
