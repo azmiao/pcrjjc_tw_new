@@ -2,7 +2,7 @@ import json
 import os
 
 import pandas as pd
-from hoshino import aiorequests, R
+from hoshino import aiorequests, R, logger
 
 current_dir = R.img('pcrjjc_tw_new').path
 
@@ -39,3 +39,35 @@ async def read_knight_exp_rank(file_name: str, target_value: int) -> int:
         else:
             break
     return target_rank
+
+
+# 更新解包资源
+async def updateData():
+    # 下载数据位置文档
+    await download_file(
+        'sqlite_stat1.csv',
+        '/TW/csv/sqlite_stat1.csv'
+    )
+    stat_path = os.path.join(current_dir, 'sqlite_stat1.csv')
+    stat_df = pd.read_csv(stat_path)
+    stat_columns = stat_df.columns.tolist()
+    # 表名
+    tbl = stat_columns[0]
+    # 标识符
+    stat = stat_columns[2]
+    # 查找表名
+    tbl_name = None
+    for _, row in stat_df.iterrows():
+        if str(row[stat]) == '201':
+            tbl_name = str(row[tbl])
+            break
+
+    if not tbl_name:
+        logger.error('[pcrjjc_tw_new] 根据201获取不到对应PCR解包资源的表名，请反馈至Github')
+        return
+
+    # 下载实际资源
+    await download_file(
+        'rank_exp.csv',
+        f'/TW/csv/{tbl_name}.csv'
+    )

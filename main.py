@@ -15,7 +15,7 @@ from .create_img import generate_info_pic, generate_support_pic, _get_cx_name, g
 from .jjchistory import *
 from .pcrclient import PcrClient, ApiException, default_headers
 from .playerpref import decrypt_xml
-from .res_parse import download_file
+from .res_parse import updateData
 from .safeservice import SafeService
 
 sv_help = '''
@@ -324,10 +324,7 @@ async def update_ver(bot, ev):
 # 自动更新解包数据
 @sv.scheduled_job('cron', id='daily_rank_exp_res', day=f'1/1', hour='2', minute='30')
 async def update_rank_exp():
-    await download_file(
-        'rank_exp.csv',
-        '/TW/csv/v1_d3f66da6fec99e8ce4b79822bf92720ab7ae27df90fdd7ce50b92b696fcecaa7.csv'
-    )
+    await updateData()
     sv.logger.info('"rank_exp.csv" 已经更新到最新版本')
 
 
