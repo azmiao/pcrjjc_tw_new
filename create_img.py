@@ -48,7 +48,7 @@ def _get_cx_name(cx):
         cx_name = '美食殿堂'
         return cx_name
     elif cx == '2':
-        cx_name = '真步真步王国'
+        cx_name = '真步王国'
         return cx_name
     elif cx == '3':
         cx_name = '破晓之星'
@@ -57,7 +57,7 @@ def _get_cx_name(cx):
         cx_name = '小小甜心'
         return cx_name
     else:
-        cx_name = '未知服务器'
+        cx_name = '未知'
         return cx_name
 
 
@@ -114,17 +114,23 @@ async def generate_info_pic(data, cx, uid):
 
     draw.text((194, 120), user_name_text, font_black, font)
 
+    # 等级
     w, h = font_resize.getsize(team_level_text)
     draw.text((568 - w, 168), team_level_text, font_black, font_resize)
+    # 总战力
     w, h = font_resize.getsize(total_power_text)
     draw.text((568 - w, 210), total_power_text, font_black, font_resize)
+    # 公会名
     w, h = font_resize.getsize(clan_name_text)
     draw.text((568 - w, 250), clan_name_text, font_black, font_resize)
+    # 好友数
+    draw.text((40, 265), '好友数：' + str(data["user_info"]["friend_num"]), font_black, font_resize)
+    # 个人信息
     for index, value in enumerate(user_comment_arr):
-        draw.text((170, 310 + (index * 22)), value, font_black, font_resize)
-    draw.text((34, 350), last_login_time_text[0] + "\n" +
-              last_login_time_text[1], font_black, font_resize)
-    draw.text((34, 392), _get_cx_name(cx), font_black, font_resize)
+        draw.text((185, 310 + (index * 22)), value, font_black, font_resize)
+    # 登录时间
+    draw.text((34, 350), '> 最后登录时间：\n' + last_login_time_text[0] + "\n" + last_login_time_text[1], font_black, font_resize)
+    draw.text((34, 410), '> 区服：' + _get_cx_name(cx), font_black, font_resize)
 
     # 资料卡 冒险经历
     normal_quest_text = _traditional_to_simplified(
@@ -195,7 +201,7 @@ async def generate_info_pic(data, cx, uid):
 
     w, h = font.getsize(
         cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2])
-    draw.text((138 + (460 - 138) / 2 - w / 2, 1058),
+    draw.text((138 + (460 - 138) / 2 - w / 2, 1060),
               cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2],
               (255, 255, 255, 255), font)
 
@@ -362,11 +368,11 @@ async def generate_talent_pic(data):
     knight_img = knight_img.resize((517, 61))
     bbox = (701, 729)
     im.paste(im=knight_img, box=bbox, mask=knight_img)
-    quest_draw.text(xy=(716, 740), text='公主骑士经验', font=fnt, fill=rgb_w)
-    quest_draw.text(xy=(1080, 738), text=str(knight_exp), font=fnt, fill=rgb)
+    quest_draw.text(xy=(735, 740), text='公主骑士经验', font=fnt, fill=rgb_w)
+    quest_draw.text(xy=(1035, 738), text=str(knight_exp), font=fnt, fill=rgb)
     bbox = (701, 849)
     im.paste(im=knight_img, box=bbox, mask=knight_img)
-    quest_draw.text(xy=(716, 860), text='公主骑士等级', font=fnt, fill=rgb_w)
+    quest_draw.text(xy=(725, 860), text='公主骑士RANK', font=fnt, fill=rgb_w)
     knight_rank = await read_knight_exp_rank('rank_exp.csv', knight_exp)
     quest_draw.text(xy=(1080, 858), text=str(knight_rank), font=fnt, fill=rgb)
 
