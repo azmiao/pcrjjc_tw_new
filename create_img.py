@@ -139,15 +139,16 @@ async def generate_info_pic(data, cx, uid):
         data["quest_info"]["hard_quest"][2])
     very_hard_quest_text = _traditional_to_simplified(
         data["quest_info"]["very_hard_quest"][2])
+    byway_quest_text = _traditional_to_simplified(
+        data["quest_info"]["byway_quest"])
 
-    w, h = font_resize.getsize(normal_quest_text)
-    draw.text((550 - w, 498), normal_quest_text, font_black, font_resize)
-    w, h = font_resize.getsize("H" + hard_quest_text +
-                               " / VH" + very_hard_quest_text)
-    draw.text((550 - w, 530), "H" + hard_quest_text +
-              " / VH", font_black, font_resize)
-    w, h = font_resize.getsize(very_hard_quest_text)
-    draw.text((550 - w, 530), very_hard_quest_text, font_black, font_resize)
+    up_quest_text = "N" + normal_quest_text + " / SUB" + byway_quest_text
+    w, h = font_resize.getsize(up_quest_text)
+    draw.text((550 - w, 498), up_quest_text, font_black, font_resize)
+
+    down_quest_text = "H" + hard_quest_text + " / VH" + very_hard_quest_text
+    w, h = font_resize.getsize(down_quest_text)
+    draw.text((550 - w, 530), down_quest_text, font_black, font_resize)
 
     arena_group_text = _traditional_to_simplified(
         data["user_info"]["arena_group"])
@@ -163,16 +164,16 @@ async def generate_info_pic(data, cx, uid):
 
     w, h = font_resize.getsize(arena_time_text)
     draw.text((550 - w, 598), arena_time_text, font_black, font_resize)
-    w, h = font_resize.getsize(arena_group_text + "场")
-    draw.text((550 - w, 630), arena_group_text + "场", font_black, font_resize)
-    w, h = font_resize.getsize(arena_rank_text + "名")
-    draw.text((550 - w, 662), arena_rank_text + "名", font_black, font_resize)
+    w, h = font_resize.getsize(arena_group_text + " 场")
+    draw.text((550 - w, 630), arena_group_text + " 场", font_black, font_resize)
+    w, h = font_resize.getsize(arena_rank_text + " 名")
+    draw.text((550 - w, 662), arena_rank_text + " 名", font_black, font_resize)
     w, h = font_resize.getsize(grand_arena_time_text)
     draw.text((550 - w, 704), grand_arena_time_text, font_black, font_resize)
-    w, h = font_resize.getsize(grand_arena_group_text + "场")
-    draw.text((550 - w, 738), grand_arena_group_text + "场", font_black, font_resize)
-    w, h = font_resize.getsize(grand_arena_rank_text + "名")
-    draw.text((550 - w, 772), grand_arena_rank_text + "名", font_black, font_resize)
+    w, h = font_resize.getsize(grand_arena_group_text + " 场")
+    draw.text((550 - w, 738), grand_arena_group_text + " 场", font_black, font_resize)
+    w, h = font_resize.getsize(grand_arena_rank_text + " 名")
+    draw.text((550 - w, 772), grand_arena_rank_text + " 名", font_black, font_resize)
 
     unit_num_text = _traditional_to_simplified(data["user_info"]["unit_num"])
     open_story_num_text = _traditional_to_simplified(
@@ -188,12 +189,11 @@ async def generate_info_pic(data, cx, uid):
     tower_cleared_ex_quest_count_text = _traditional_to_simplified(
         data["user_info"]["tower_cleared_ex_quest_count"])
 
-    w, h = font_resize.getsize(tower_cleared_floor_num_text + "阶")
-    draw.text((550 - w, 949), tower_cleared_floor_num_text +
-              "阶", font_black, font_resize)
+    w, h = font_resize.getsize(tower_cleared_floor_num_text + " 阶")
+    draw.text((550 - w, 949), tower_cleared_floor_num_text + " 阶", font_black, font_resize)
+
     w, h = font_resize.getsize(tower_cleared_ex_quest_count_text)
-    draw.text((550 - w, 984), tower_cleared_ex_quest_count_text,
-              font_black, font_resize)
+    draw.text((550 - w, 984), tower_cleared_ex_quest_count_text, font_black, font_resize)
 
     simplified = _traditional_to_simplified(data["user_info"]["viewer_id"])
     cx = simplified[:1]
