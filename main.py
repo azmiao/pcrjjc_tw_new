@@ -54,6 +54,8 @@ sv_help = '''
 [@BOT全局禁用竞技场推送] 禁用所有推送功能(仅限维护组)
 
 [@BOT清空竞技场订阅] 清空所有绑定的账号(仅限维护组)
+
+[@BOT手动刷新竞技场缓存] 刷新Client缓存
 '''.strip()
 
 sv = SafeService('pcrjjc_tw_new', help_=sv_help, bundle='pcr查询')
@@ -326,6 +328,20 @@ async def update_ver(bot, ev):
 async def update_rank_exp():
     await updateData()
     sv.logger.info('"rank_exp.csv" 已经更新到最新版本')
+
+
+# 手动刷新竞技场缓存
+@sv.on_prefix('手动刷新竞技场缓存', only_to_me=True)
+async def clear_cache(bot, ev):
+    global lck, first_client_cache, other_client_cache
+    async with lck:
+        if not priv.check_priv(ev, priv.SUPERUSER):
+            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
+            return
+        # 清理缓存
+        first_client_cache = None
+        other_client_cache = None
+        await bot.send(ev, f'pcrjjc_tw_new的Client缓存已刷新!')
 
 
 # 首次启动
