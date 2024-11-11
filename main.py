@@ -207,7 +207,7 @@ async def judge_uid(uid_str, bot, ev):
     # 校验数字
     try:
         int(uid_str)
-    except TypeError as _:
+    except TypeError or ValueError as _:
         await bot.send(ev, 'uid错误，需要10位纯数字，您输入了[' + str(len(uid_str)) + ']')
         return
 
