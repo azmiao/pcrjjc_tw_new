@@ -3,13 +3,13 @@
 
 ## 各版本区别
 
-|                                 版本                                 |     说明     |       备注        | 
-|:------------------------------------------------------------------:|:----------:|:---------------:|
-|   [(当前) pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)    |   台服专用版    | 增加全局禁用推送功能和各种优化 | 
-|         [pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)         |   台服专用版    |    额外支持多服查询     | 
-| [pcrjjc_huannai](https://github.com/SonderXiaoming/pcrjjc_huannai) | pcrjjc2魔改版 |     各种优化和简化     |
-|            [pcrjjc2](https://github.com/cc004/pcrjjc2)             | pcrjjc重制版  |  适配了各种服（包括台服）   | 
-|          [pcrjjc](https://github.com/lulu666lulu/pcrjjc)           |    初始版本    |     梦开始的地方      |
+|                                 版本                                 |     说明     |           备注            | 
+|:------------------------------------------------------------------:|:----------:|:-----------------------:|
+|   [(当前) pcrjjc_tw_new](https://github.com/azmiao/pcrjjc_tw_new)    |   台服专用版    | 适配合服配置，并增加全局禁用推送功能和各种优化 | 
+|         [pcrjjc3-tw](https://github.com/azmiao/pcrjjc3-tw)         |   台服专用版    |        额外支持多服查询         | 
+| [pcrjjc_huannai](https://github.com/SonderXiaoming/pcrjjc_huannai) | pcrjjc2魔改版 |         各种优化和简化         |
+|            [pcrjjc2](https://github.com/cc004/pcrjjc2)             | pcrjjc重制版  |      适配了各种服（包括台服）       | 
+|          [pcrjjc](https://github.com/lulu666lulu/pcrjjc)           |    初始版本    |         梦开始的地方          |
 
 ## 台服合服后的适配说明
 
@@ -35,16 +35,18 @@
 
 ## 更新日志
 
+2024-11-12  v1.2.3   减小不必要的定时查询开销，修改新增用户默认不推送，推送改为合并统一消息，规避下风控风险
+
 2024-08-20  v1.2.2   修复获取解包资源失败的问题
 
 2024-07-10  v1.2.1   详细查询深域部分，公主骑士等级采用解包数据进行计算，数据源自 [priconne-diff](https://github.com/Expugn/priconne-diff)
 
 2024-06-24  v1.2.0   详细查询新增深域相关的查询图片，可见最下方图片预览，但公主骑士等级由于计算公式暂未解包，因此暂不可用
 
-2024-03-28  v1.1.2   由于谷歌页面经常变化，去除自动更新版本号，改为手动使用命令更新
-
 <details>
 <summary>更以前的更新日志</summary>
+
+2024-03-28  v1.1.2   由于谷歌页面经常变化，去除自动更新版本号，改为手动使用命令更新
 
 2023-12-21  v1.1.1   修复自动更新版本号的BUG
 

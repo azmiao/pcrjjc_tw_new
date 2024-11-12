@@ -208,17 +208,17 @@ async def judge_uid(uid_str, bot, ev):
     try:
         int(uid_str)
     except TypeError or ValueError as _:
-        await bot.send(ev, 'uid错误，需要10位纯数字，您输入了[' + str(len(uid_str)) + ']')
+        await bot.send(ev, 'uid错误，需要10位纯数字，您输入了[' + str(uid_str) + ']')
         return
 
     if len(uid_str) != 10:
-        await bot.send(ev, 'uid长度错误，需要10位数字，您输入了[' + str(len(uid_str)) + ']')
+        await bot.send(ev, 'uid长度错误，需要10位数字，您输入了' + str(len(uid_str)) + '位数')
         return
 
     # 校验服务器
     cx = uid_str[:1]
     if cx not in ['1', '2', '3', '4']:
-        await bot.send(ev, 'uid校验出错，您输入了[' + str(len(uid_str)) + ']')
+        await bot.send(ev, 'uid校验出错，第一位数字为原始服务器ID，只能为1/2/3/4，您输入了[' + str(len(uid_str)) + ']')
         return
 
 
@@ -333,7 +333,7 @@ async def update_rank_exp():
 # 手动刷新竞技场缓存
 @sv.on_prefix('手动刷新竞技场缓存', only_to_me=True)
 async def clear_cache(bot, ev):
-    global lck, first_client_cache, other_client_cache
+    global lck, first_client_cache, other_client_cache, root, binds
     async with lck:
         if not priv.check_priv(ev, priv.SUPERUSER):
             await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
@@ -341,7 +341,19 @@ async def clear_cache(bot, ev):
         # 清理缓存
         first_client_cache = None
         other_client_cache = None
+        # 刷新订阅
+        await refresh_binds()
+
         await bot.send(ev, f'pcrjjc_tw_new的Client缓存已刷新!')
+
+
+# 刷新订阅
+async def refresh_binds():
+    global root, binds
+    if exists(config):
+        with open(config) as file:
+            root = load(file)
+    binds = root['arena_bind']
 
 
 # 首次启动
@@ -372,8 +384,8 @@ async def on_arena_bind(bot, ev):
             'id': id_str,
             'uid': user_id,
             'gid': str(ev.group_id),
-            'arena_on': last is None or last['arena_on'],
-            'grand_arena_on': last is None or last['grand_arena_on'],
+            'arena_on': False if last is None else last['arena_on'],
+            'grand_arena_on': False if last is None else last['grand_arena_on'],
         }
         save_binds()
         is_file = judge_file(int(cx))
@@ -657,68 +669,78 @@ async def on_arena_schedule():
     async with lck:
         bind_cache = deepcopy(binds)
 
-    for uid in bind_cache:
-        info = bind_cache[uid]
-        cx = info["id"][:1]
+    msg_dict = {}
+    for user_id in bind_cache:
+        info = bind_cache[user_id]
+        arena_on = info['arena_on']
+        grand_arena_on = info['grand_arena_on']
+        game_id = info['id']
+        cx = game_id[:1]
+        gid = info['gid']
+
+        # 两个订阅都没开
+        if not arena_on and not grand_arena_on:
+            continue
+
         try:
-            sv.logger.info(f'用户({info["uid"]}) 查询[ {cx}服 ]: {info["id"]}')
-            res = await query(info["id"])
+            sv.logger.info(f'> 对用户[{user_id}]查询[{cx}服]: [{game_id}]')
+            res = await query(game_id)
             if 'lack share_prefs' in res:
-                sv.logger.info(f'由于缺少该服配置文件，已跳过{cx}服的id: {info["id"]}')
+                sv.logger.info(f'由于缺少该服配置文件，已跳过{cx}服的id: {game_id}')
                 continue
             res = (res['user_info']['arena_rank'], res['user_info']['grand_arena_rank'])
 
-            if uid not in cache:
-                cache[uid] = res
+            if user_id not in cache:
+                sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]排名：' + str(res) + '已存入缓存')
+                cache[user_id] = res
                 continue
 
-            last = cache[uid]
-            cache[uid] = res
+            last = cache[user_id]
+            cache[user_id] = res
 
             # 两次间隔排名变化且开启了相关订阅就记录到数据库
-            if res[0] != last[0] and info['arena_on']:
-                jjc_history.add(int(info["id"]), 1, last[0], res[0])
-                jjc_history.refresh(int(info["id"]), 1)
-                sv.logger.info(f"{info['id']}: JJC {last[0]}->{res[0]}")
-            if res[1] != last[1] and info['grand_arena_on']:
-                jjc_history.add(int(info["id"]), 0, last[1], res[1])
-                jjc_history.refresh(int(info["id"]), 0)
-                sv.logger.info(f"{info['id']}: PJJC {last[1]}->{res[1]}")
+            if res[0] != last[0] and arena_on:
+                jjc_history.add(int(game_id), 1, last[0], res[0])
+                jjc_history.refresh(int(game_id), 1)
+                sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]: JJC {last[0]}->{res[0]}')
+            if res[1] != last[1] and grand_arena_on:
+                jjc_history.add(int(game_id), 0, last[1], res[1])
+                jjc_history.refresh(int(game_id), 0)
+                sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]: PJJC {last[1]}->{res[1]}')
 
-            if res[0] > last[0] and info['arena_on']:
-                for sid in get_self_ids():
-                    try:
-                        await bot.send_group_msg(
-                            self_id=sid,
-                            group_id=int(info['gid']),
-                            message=f'[CQ:at,qq={info["uid"]}]jjc：{last[0]}->{res[0]} ▼{res[0] - last[0]}'
-                        )
-                        break
-                    except Exception as _:
-                        gid = int(info['gid'])
-                        sv.logger.info(f'bot账号{sid}不在群{gid}中，将忽略该消息')
-
-            if res[1] > last[1] and info['grand_arena_on']:
-                for sid in get_self_ids():
-                    try:
-                        await bot.send_group_msg(
-                            self_id=sid,
-                            group_id=int(info['gid']),
-                            message=f'[CQ:at,qq={info["uid"]}]pjjc：{last[1]}->{res[1]} ▼{res[1] - last[1]}'
-                        )
-                        break
-                    except Exception as _:
-                        gid = int(info['gid'])
-                        sv.logger.info(f'bot账号{sid}不在群{gid}中，将忽略该消息')
+            # 排名下降了且开启了相关订阅就推送
+            if (res[0] > last[0] and arena_on) or (res[1] > last[1] and grand_arena_on):
+                list_get = msg_dict.get(int(gid), [])
+                msg = f'[CQ:at,qq={user_id}]:\n'
+                if res[0] > last[0] and arena_on:
+                    msg += f' > JJC：{last[0]}->{res[0]} ▼{res[0] - last[0]}\n'
+                if res[1] > last[1] and grand_arena_on:
+                    msg += f' > PJJC：{last[1]}->{res[1]} ▼{res[1] - last[1]}\n'
+                list_get.append(msg)
+                msg_dict[int(gid)] = list_get
 
         except ApiException as e:
-            sv.logger.info(f'对台服{cx}服的{info["id"]}的检查出错' + str(e))
+            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错' + str(e))
             if e.code == 6:
                 async with lck:
-                    delete_arena(uid)
-                sv.logger.info(f'已经自动删除错误的uid={info["id"]}')
+                    delete_arena(user_id)
+                sv.logger.error(f'已经自动删除错误的uid={game_id}')
         except Exception as e:
-            sv.logger.info(f'对台服{cx}服的{info["id"]}的检查出错' + str(e))
+            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错' + str(e))
 
+    # 开始分群发送消息
+    if msg_dict:
+        for sid in get_self_ids():
+            for group_id in msg_dict:
+                list_get = msg_dict.get(group_id, [])
+                if list_get:
+                    try:
+                        await bot.send_group_msg(
+                            self_id=sid,
+                            group_id=group_id,
+                            message='\n'.join(list_get)
+                        )
+                    except Exception as _:
+                        sv.logger.error(f'bot账号{sid}不在群{group_id}中，将忽略该消息')
 
 # ========== ↑ ↑ ↑ 推送 & 历史 ↑ ↑ ↑ ==========
