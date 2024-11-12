@@ -695,6 +695,7 @@ async def on_arena_schedule():
                 cache[user_id] = res
                 continue
 
+            sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]当前排名：' + str(res))
             last = cache[user_id]
             cache[user_id] = res
 
@@ -702,11 +703,11 @@ async def on_arena_schedule():
             if res[0] != last[0] and arena_on:
                 jjc_history.add(int(game_id), 1, last[0], res[0])
                 jjc_history.refresh(int(game_id), 1)
-                sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]: JJC {last[0]}->{res[0]}')
+                sv.logger.info(f'  - JJC {last[0]}->{res[0]}')
             if res[1] != last[1] and grand_arena_on:
                 jjc_history.add(int(game_id), 0, last[1], res[1])
                 jjc_history.refresh(int(game_id), 0)
-                sv.logger.info(f'> 用户[{user_id}]的账号[{game_id}]: PJJC {last[1]}->{res[1]}')
+                sv.logger.info(f'  - PJJC {last[1]}->{res[1]}')
 
             # 排名下降了且开启了相关订阅就推送
             if (res[0] > last[0] and arena_on) or (res[1] > last[1] and grand_arena_on):
