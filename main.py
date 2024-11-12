@@ -684,7 +684,6 @@ async def on_arena_schedule():
             continue
 
         try:
-            sv.logger.info(f'> 对用户[{user_id}]查询[{cx}服]: [{game_id}]')
             res = await query(game_id)
             if 'lack share_prefs' in res:
                 sv.logger.info(f'由于缺少该服配置文件，已跳过{cx}服的id: {game_id}')
@@ -735,11 +734,12 @@ async def on_arena_schedule():
             for group_id in msg_dict:
                 list_get = msg_dict.get(group_id, [])
                 if list_get:
+                    msg_end = '\n'.join(list_get)
                     try:
                         await bot.send_group_msg(
                             self_id=sid,
                             group_id=group_id,
-                            message='\n'.join(list_get)
+                            message=msg_end.strip()
                         )
                     except Exception as _:
                         sv.logger.error(f'bot账号{sid}不在群{group_id}中，将忽略该消息')
