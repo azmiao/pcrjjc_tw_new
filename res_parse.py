@@ -24,7 +24,7 @@ async def download_file(file_name: str, file_uri: str):
 
 # 计算实际RANK
 async def read_knight_exp_rank(file_name: str, target_value: int) -> int:
-    file_path = os.path.join(os.path.dirname(__file__), file_name)
+    file_path = os.path.join(current_dir, file_name)
     df = pd.read_csv(file_path)
 
     # 自动识别exp和rank列
