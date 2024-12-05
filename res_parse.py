@@ -26,16 +26,25 @@ async def download_file(file_name: str, file_uri: str):
 async def read_knight_exp_rank(file_name: str, target_value: int) -> int:
     file_path = os.path.join(current_dir, file_name)
     df = pd.read_csv(file_path)
+
+    # 自动识别exp和rank列
     columns = df.columns.tolist()
 
-    rank = columns[0]
-    exp = columns[1]
+    # 假设数据第一行用来识别 exp 列，通过 第一个数据为 0 判断
+    if df.iloc[0][columns[0]] == 0:
+        exp, rank = columns[0], columns[1]
+    else:
+        exp, rank = columns[1], columns[0]
+
+    # 转换为 int，以提高计算效率
+    df[exp] = df[exp].astype(int)
+    df[rank] = df[rank].astype(int)
 
     target_rank = 1
-
+    # 查找满足条件的目标 rank
     for _, row in df.iterrows():
-        if target_value >= int(row[exp]):
-            target_rank = int(row[rank])
+        if target_value >= row[exp]:
+            target_rank = row[rank]
         else:
             break
     return target_rank
