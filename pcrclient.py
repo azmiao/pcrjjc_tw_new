@@ -7,8 +7,10 @@ from random import randint
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
-from hoshino.aiorequests import post
 from msgpack import packb, unpackb
+
+from yuiChyan.config import PROXY
+from yuiChyan.http_request import get_session_or_create
 
 # 默认headers
 default_headers = {
@@ -117,13 +119,12 @@ class PcrClient:
                     'utf8')).hexdigest()
             self.headers['SHORT-UDID'] = PcrClient._encode(self.short_udid)
 
-            resp = await post(self.api_root + api_url,
-                              data=crypto,
-                              headers=self.headers,
-                              timeout=5,
-                              proxies=self.proxy,
-                              verify=False)
-            response = await resp.content
+            session = get_session_or_create('PcrClient', True, PROXY)
+            resp = await session.post(self.api_root + api_url,
+                                      data=crypto,
+                                      headers=self.headers,
+                                      timeout=5)
+            response = resp.content
 
             response = self.unpack(response)[0]
 

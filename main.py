@@ -1,83 +1,41 @@
 import asyncio
 import json
+import os
 import time
 from asyncio import Lock
 from copy import deepcopy
-from json import load, dump
-from os.path import dirname, join, exists
 
-import requests
-from hoshino import priv, get_bot, get_self_ids, R
-from hoshino.typing import NoticeSession, MessageSegment
-from hoshino.util import pic2b64
+from aiocqhttp import MessageSegment
+from httpx import ProxyError
+from nonebot import NoticeSession
 
+from yuiChyan import get_bot
+from yuiChyan.exception import LakePermissionException
+from yuiChyan.permission import check_permission, SUPERUSER
+from yuiChyan.resources import base_img_path
+from yuiChyan.util import pic2b64
 from .create_img import generate_info_pic, generate_support_pic, _get_cx_name, generate_talent_pic
-from .jjchistory import *
 from .pcrclient import PcrClient, ApiException, default_headers
-from .playerpref import decrypt_xml
+from .playerpref import decrypt_xml, sv
 from .res_parse import updateData
-from .safeservice import SafeService
-
-sv_help = '''
-[竞技场绑定 uid] 绑定竞技场信息
-
-[竞技场订阅状态] 查看绑定状态
-
-[删除竞技场绑定] 删除绑定的信息
-
-[竞技场查询 uid] 查询竞技场简要信息（绑定后无需输入uid）
-
-[详细查询 uid] 查询账号详细信息（绑定后无需输入uid）
-
-[启用竞技场订阅] 启用战斗竞技场排名变动推送，全局推送启用时有效
-
-[停止竞技场订阅] 停止战斗竞技场排名变动推送
-
-[启用公主竞技场订阅] 启用公主竞技场排名变动推送，全局推送启用时有效
-
-[停止公主竞技场订阅] 停止公主竞技场排名变动推送
-
-[竞技场历史] 查询战斗竞技场变化记录（战斗竞技场订阅开启有效，可保留10条）
-
-[公主竞技场历史] 查询公主竞技场变化记录（公主竞技场订阅开启有效，可保留10条）
-
-[查询头像框] 查看自己设置的详细查询里的角色头像框
-
-[更换头像框] 更换详细查询生成的头像框，默认彩色
-
-[查询群数] 查询bot所在群的数目
-
-[查询竞技场订阅数] 查询绑定账号的总数量
-
-[@BOT全局启用竞技场推送] 启用所有群的竞技场排名推送功能(仅限维护组)
-
-[@BOT全局禁用竞技场推送] 禁用所有推送功能(仅限维护组)
-
-[@BOT清空竞技场订阅] 清空所有绑定的账号(仅限维护组)
-
-[@BOT手动刷新竞技场缓存] 刷新Client缓存
-'''.strip()
-
-sv = SafeService('pcrjjc_tw_new', help_=sv_help, bundle='pcr查询')
 
 # ========== ↓ ↓ ↓ 配置读取 ↓ ↓ ↓ ==========
 
 # 读取绑定配置
-curPath = dirname(__file__)
-old_config = join(curPath, 'binds.json')
-config = join(curPath, 'binds_v2.json')
+curPath = os.path.dirname(__file__)
+config = os.path.join(curPath, 'binds_v2.json')
 root = {
     'global_push': True,
     'arena_bind': {}
 }
-if exists(config):
+if os.path.exists(config):
     with open(config) as fp:
-        root = load(fp)
+        root = json.load(fp)
 binds = root['arena_bind']
 
 # 读取代理配置
-with open(join(curPath, 'account.json')) as fp:
-    pInfo = load(fp)
+with open(os.path.join(curPath, 'account.json')) as fp:
+    pInfo = json.load(fp)
 
 # 一些变量初始化
 cache = {}
@@ -87,9 +45,6 @@ client = None
 lck = Lock()
 captcha_lck = Lock()
 qLck = Lock()
-
-# 数据库对象初始化
-jjc_history = JJCHistoryStorage()
 
 # 全局缓存的client登陆 | 减少协议握手次数
 first_client_cache = None
@@ -104,6 +59,7 @@ other_client_cache = None
 header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
 if not os.path.exists(header_path):
     with open(header_path, 'w', encoding='UTF-8') as f:
+        # noinspection PyTypeChecker
         json.dump(default_headers, f, indent=4, ensure_ascii=False)
 
 # 头像框设置文件，默认彩色
@@ -114,27 +70,8 @@ if not os.path.exists(current_dir):
         "customize": {}
     }
     with open(current_dir, 'w', encoding='UTF-8') as f:
+        # noinspection PyTypeChecker
         json.dump(data, f, indent=4, ensure_ascii=False)
-
-# 2023-05-10 合服 | 如果检测到旧配置且没有新配置，就将其移入新配置文件
-if os.path.exists(old_config) and not os.path.exists(config):
-    with open(old_config, 'r', encoding='UTF-8') as file0:
-        config_data = dict(json.load(file0))
-    bind_data = config_data.get('arena_bind', {})
-    for user_id_str in list(bind_data.keys()):
-        bind_data_info = bind_data.get(user_id_str, {})
-
-        game_id_str = bind_data_info.get('id', '')
-        cx_str = bind_data_info.get('cx', '')
-        bind_data_info['id'] = cx_str + game_id_str
-        bind_data[user_id_str] = bind_data_info
-    config_data['arena_bind'] = bind_data
-    config_data['global_push'] = True
-    with open(config, 'w', encoding='UTF-8') as f:
-        json.dump(config_data, f, indent=4, ensure_ascii=False)
-    root = config_data
-    binds = root['arena_bind']
-
 
 # ========== ↑ ↑ ↑ 启动时检查文件 ↑ ↑ ↑ ==========
 
@@ -161,7 +98,7 @@ def get_client():
     # 1服
     if first_client_cache is None:
         if judge_file(1):
-            ac_info_first = decrypt_xml(join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
+            ac_info_first = decrypt_xml(os.path.join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_first = PcrClient(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
                                      ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
         else:
@@ -171,7 +108,7 @@ def get_client():
     # 其他服
     if other_client_cache is None:
         if judge_file(0):
-            ac_info_other = decrypt_xml(join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
+            ac_info_other = decrypt_xml(os.path.join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_other = PcrClient(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
                                      ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
         else:
@@ -201,7 +138,8 @@ async def query(uid):
 
 def save_binds():
     with open(config, 'w') as file:
-        dump(root, file, indent=4)
+        # noinspection PyTypeChecker
+        json.dump(root, file, indent=4)
 
 
 async def judge_uid(uid_str, bot, ev):
@@ -228,22 +166,8 @@ async def judge_uid(uid_str, bot, ev):
 
 # ========== ↓ ↓ ↓ 插件信息功能 ↓ ↓ ↓ ==========
 
-@sv.on_fullmatch('竞技场帮助', only_to_me=False)
-async def send_help(bot, ev):
-    await bot.send(ev, f'{sv_help}')
 
-
-@sv.on_fullmatch('查询群数', only_to_me=False)
-async def group_num(bot, ev):
-    self_ids = get_self_ids()
-    msg_list = []
-    for sid in self_ids:
-        gl = await bot.get_group_list(self_id=sid)
-        msg_list.append(f'Bot({str(sid)})目前正在为【{len(gl)}】个群服务')
-    await bot.send(ev, '\n'.join(msg_list))
-
-
-@sv.on_fullmatch('查询竞技场订阅数', only_to_me=False)
+@sv.on_match('查询竞技场订阅数')
 async def describe_number(bot, ev):
     global binds, lck
     async with lck:
@@ -255,42 +179,41 @@ async def describe_number(bot, ev):
 
 # ========== ↓ ↓ ↓ 维护组功能 ↓ ↓ ↓ ==========
 
-@sv.on_fullmatch('清空竞技场订阅', only_to_me=True)
-async def del_all(bot, ev):
+@sv.on_match('清空竞技场订阅')
+async def on_match(bot, ev):
     global binds, lck
     async with lck:
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, None, SUPERUSER)
         num = len(binds)
         binds.clear()
         save_binds()
         await bot.send(ev, f'已清空全部【{num}】个已订阅账号！')
 
 
-@sv.on_fullmatch('全局启用竞技场推送', only_to_me=True)
+@sv.on_match('全局启用竞技场推送')
 async def enable_all_push(bot, ev):
     global root, lck
     async with lck:
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, None, SUPERUSER)
         root['global_push'] = True
         with open(config, 'w') as file:
-            dump(root, file, indent=4)
+            # noinspection PyTypeChecker
+            json.dump(root, file, indent=4)
         await bot.send(ev, f'已全局启用竞技场推送！')
 
 
-@sv.on_fullmatch('全局禁用竞技场推送', only_to_me=True)
+@sv.on_match('全局禁用竞技场推送', only_to_me=True)
 async def disable_all_push(bot, ev):
     global root, lck
     async with lck:
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, None, SUPERUSER)
         root['global_push'] = False
         with open(config, 'w') as file:
-            dump(root, file, indent=4)
+            # noinspection PyTypeChecker
+            json.dump(root, file, indent=4)
         await bot.send(ev, f'已全局禁用竞技场推送！')
 
 
@@ -299,13 +222,13 @@ async def disable_all_push(bot, ev):
 async def update_ver(bot, ev):
     global lck, first_client_cache, other_client_cache
     async with lck:
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, None, SUPERUSER)
         try:
             headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
             default_headers['APP-VER'] = str(ev.message).strip()
             with open(headers_path, 'w', encoding='UTF-8') as file:
+                # noinspection PyTypeChecker
                 json.dump(default_headers, file, indent=4, ensure_ascii=False)
             # 清理缓存
             first_client_cache = None
@@ -316,7 +239,7 @@ async def update_ver(bot, ev):
 
 
 # 查询版本号
-@sv.on_fullmatch('查询竞技场版本号')
+@sv.on_match('查询竞技场版本号')
 async def update_ver(bot, ev):
     headers_path = os.path.join(os.path.dirname(__file__), 'headers.json')
     with open(headers_path, 'r', encoding='UTF-8') as file:
@@ -325,7 +248,7 @@ async def update_ver(bot, ev):
 
 
 # 自动更新解包数据
-@sv.scheduled_job('cron', id='daily_rank_exp_res', day=f'1/1', hour='2', minute='30')
+@sv.scheduled_job(day='1/1', hour='2', minute='30')
 async def update_rank_exp():
     await updateData()
     sv.logger.info('"rank_exp.csv" 已经更新到最新版本')
@@ -336,9 +259,8 @@ async def update_rank_exp():
 async def clear_cache(bot, ev):
     global lck, first_client_cache, other_client_cache, root, binds
     async with lck:
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '抱歉，您的权限不足，只有BOT维护组才能进行该操作！')
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, None, SUPERUSER)
         # 清理缓存
         first_client_cache = None
         other_client_cache = None
@@ -351,16 +273,16 @@ async def clear_cache(bot, ev):
 # 刷新订阅
 async def refresh_binds():
     global root, binds
-    if exists(config):
+    if os.path.exists(config):
         with open(config) as file:
-            root = load(file)
+            root = json.load(file)
     binds = root['arena_bind']
 
 
 # 首次启动
-if not os.path.exists(R.img('pcrjjc_tw_new').path):
-    os.mkdir(R.img('pcrjjc_tw_new').path)
-if not os.path.exists(os.path.join(R.img('pcrjjc_tw_new').path, 'rank_exp.csv')):
+res_dir = os.path.join(base_img_path, 'pcrjjc_tw_new')
+os.makedirs(res_dir, exist_ok=True)
+if not os.path.exists(os.path.join(res_dir, 'rank_exp.csv')):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(update_rank_exp())
 
@@ -398,7 +320,6 @@ async def on_arena_bind(bot, ev):
 
 # 订阅删除方法
 def delete_arena(user_id):
-    jjc_history.remove(binds[user_id]['id'])
     binds.pop(user_id)
     save_binds()
 
@@ -409,9 +330,8 @@ async def delete_arena_sub(bot, ev):
     user_id = str(ev.user_id)
 
     if ev.message[0].type == 'at':
-        if not priv.check_priv(ev, priv.SUPERUSER):
-            await bot.send(ev, '删除他人订阅请联系维护', at_sender=True)
-            return
+        if not check_permission(ev, SUPERUSER):
+            raise LakePermissionException(ev, '删除他人订阅仅限维护组', SUPERUSER)
     elif len(ev.message) == 1 and ev.message[0].type == 'text' and not ev.message[0].data['text']:
         user_id = str(ev.user_id)
 
@@ -425,7 +345,7 @@ async def delete_arena_sub(bot, ev):
     await bot.finish(ev, '删除竞技场订阅成功', at_sender=True)
 
 
-@sv.on_fullmatch('竞技场订阅状态')
+@sv.on_match('竞技场订阅状态')
 async def send_arena_sub_status(bot, ev):
     global binds, lck
     uid = str(ev['user_id'])
@@ -447,7 +367,6 @@ async def leave_notice(session: NoticeSession):
     global lck, binds
     uid = str(session.ctx['user_id'])
     gid = str(session.ctx['group_id'])
-    bot = get_bot()
     if uid not in binds:
         return
     async with lck:
@@ -456,10 +375,7 @@ async def leave_notice(session: NoticeSession):
         if info['gid'] == gid:
             binds.pop(uid)
             save_binds()
-            await bot.send_group_msg(
-                group_id=int(info['gid']),
-                message=f'{uid}退群了，已自动删除其绑定在本群的竞技场订阅推送'
-            )
+            sv.logger.info(f'{uid}退群了，已自动删除其绑定在本群的竞技场订阅推送')
 
 
 # ========== ↑ ↑ ↑ 绑定解绑功能 ↑ ↑ ↑ ==========
@@ -509,7 +425,7 @@ pjjc排名：{res['user_info']["grand_arena_rank"]}  ({res['user_info']["grand_a
             await bot.send(ev, msg, at_sender=False)
         except ApiException as e:
             await bot.send(ev, f'查询出错，{e}', at_sender=True)
-        except requests.exceptions.ProxyError:
+        except ProxyError:
             await bot.send(ev, f'查询出错，连接代理失败，请再次尝试', at_sender=True)
         except Exception as e:
             await bot.send(ev, f'查询出错，{e}', at_sender=True)
@@ -559,7 +475,7 @@ async def on_query_arena_all(bot, ev):
 
         except ApiException as e:
             await bot.send(ev, f'查询出错，{e}', at_sender=True)
-        except requests.exceptions.ProxyError:
+        except ProxyError:
             await bot.send(ev, f'查询出错，连接代理失败，请再次尝试', at_sender=True)
         except Exception as e:
             await bot.send(ev, f'查询出错，{e}', at_sender=True)
@@ -587,6 +503,7 @@ async def change_frame(bot, ev):
         f_data = json.load(file)
     f_data['customize'] = frame_data
     with open(frame_dir, 'w', encoding='UTF-8') as rf:
+        # noinspection PyTypeChecker
         json.dump(f_data, rf, indent=4, ensure_ascii=False)
     await bot.send(ev, f'已成功选择头像框:{frame_tmp}')
     frame_path = os.path.join(os.path.dirname(__file__), f'img/frame/{frame_tmp}')
@@ -595,7 +512,7 @@ async def change_frame(bot, ev):
 
 
 # 查头像框
-@sv.on_fullmatch(('查竞技场头像框', '查询竞技场头像框', '查询头像框'))
+@sv.on_match(('查竞技场头像框', '查询竞技场头像框', '查询头像框'))
 async def see_a_see_frame(bot, ev):
     user_id = str(ev.user_id)
     frame_dir = os.path.join(os.path.dirname(__file__), 'frame.json')
@@ -614,7 +531,7 @@ async def see_a_see_frame(bot, ev):
 # ========== ↑ ↑ ↑ 头像框功能 ↑ ↑ ↑ ==========
 
 
-# ========== ↓ ↓ ↓ 推送 & 历史 ↓ ↓ ↓ ==========
+# ========== ↓ ↓ ↓ 推送 ↓ ↓ ↓ ==========
 
 @sv.on_rex('(启用|停止)(公主)?竞技场订阅')
 async def change_arena_sub(bot, ev):
@@ -632,33 +549,8 @@ async def change_arena_sub(bot, ev):
             await bot.finish(ev, f'{ev["match"].group(0)}成功', at_sender=True)
 
 
-# 竞技场历史记录
-@sv.on_prefix('竞技场历史')
-async def send_arena_history(bot, ev):
-    global binds, lck
-    user_id = str(ev['user_id'])
-    if user_id not in binds:
-        await bot.send(ev, '您暂未未绑定竞技场', at_sender=True)
-    else:
-        game_id = binds[user_id]['id']
-        msg = f'\n{jjc_history.select(game_id, 1)}'
-        await bot.finish(ev, msg, at_sender=True)
-
-
-@sv.on_prefix('公主竞技场历史')
-async def send_p_arena_history(bot, ev):
-    global binds, lck
-    user_id = str(ev['user_id'])
-    if user_id not in binds:
-        await bot.send(ev, '您暂未未绑定竞技场', at_sender=True)
-    else:
-        game_id = binds[user_id]['id']
-        msg = f'\n{jjc_history.select(game_id, 0)}'
-        await bot.finish(ev, msg, at_sender=True)
-
-
 # 自动推送 | 默认周期为3分钟
-@sv.scheduled_job('interval', minutes=3)
+@sv.scheduled_job(minute='*/3')
 async def on_arena_schedule():
     global cache, root, binds, lck
     if not root.get('global_push', True):
@@ -699,14 +591,10 @@ async def on_arena_schedule():
             last = cache[user_id]
             cache[user_id] = res
 
-            # 两次间隔排名变化且开启了相关订阅就记录到数据库
+            # 两次间隔排名变化
             if res[0] != last[0] and arena_on:
-                jjc_history.add(int(game_id), 1, last[0], res[0])
-                jjc_history.refresh(int(game_id), 1)
                 sv.logger.info(f'  - JJC {last[0]}->{res[0]}')
             if res[1] != last[1] and grand_arena_on:
-                jjc_history.add(int(game_id), 0, last[1], res[1])
-                jjc_history.refresh(int(game_id), 0)
                 sv.logger.info(f'  - PJJC {last[1]}->{res[1]}')
 
             # 排名下降了且开启了相关订阅就推送
@@ -731,7 +619,7 @@ async def on_arena_schedule():
 
     # 开始分群发送消息
     if msg_dict:
-        for sid in get_self_ids():
+        for sid in bot.get_self_ids():
             for group_id in msg_dict:
                 list_get = msg_dict.get(group_id, [])
                 if list_get:

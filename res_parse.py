@@ -1,22 +1,22 @@
-import json
 import os
 
+import httpx
 import pandas as pd
-from hoshino import aiorequests, R, logger
 
-current_dir = R.img('pcrjjc_tw_new').path
+from yuiChyan.config import PROXY
+from yuiChyan.resources import base_img_path
+from .playerpref import sv
 
-# 读取代理配置
-with open(os.path.join(os.path.dirname(__file__), 'account.json')) as fp:
-    p_info = json.load(fp)
+res_dir = os.path.join(base_img_path, 'pcrjjc_tw_new')
 
 
 # 保存解包数据
 async def download_file(file_name: str, file_uri: str):
-    file_path = os.path.join(current_dir, file_name)
+    file_path = os.path.join(res_dir, file_name)
     file_url = 'https://raw.githubusercontent.com/Expugn/priconne-diff/master' + file_uri
-    file_rep = await aiorequests.get(file_url, proxies=p_info['proxy'])
-    response = await file_rep.content
+    async with httpx.AsyncClient(proxy=PROXY) as session:
+        file_rep = await session.get(file_url)
+    response = file_rep.content
     # 写入文件
     with open(file_path, 'wb') as file:
         file.write(response)
@@ -24,7 +24,7 @@ async def download_file(file_name: str, file_uri: str):
 
 # 计算实际RANK
 async def read_knight_exp_rank(file_name: str, target_value: int) -> int:
-    file_path = os.path.join(current_dir, file_name)
+    file_path = os.path.join(res_dir, file_name)
     df = pd.read_csv(file_path)
 
     # 自动识别exp和rank列
@@ -57,7 +57,7 @@ async def updateData():
         'sqlite_stat1.csv',
         '/TW/csv/sqlite_stat1.csv'
     )
-    stat_path = os.path.join(current_dir, 'sqlite_stat1.csv')
+    stat_path = os.path.join(res_dir, 'sqlite_stat1.csv')
     stat_df = pd.read_csv(stat_path)
     stat_columns = stat_df.columns.tolist()
     # 表名
@@ -72,7 +72,7 @@ async def updateData():
             break
 
     if not tbl_name:
-        logger.error('[pcrjjc_tw_new] 根据201获取不到对应PCR解包资源的表名，请反馈至Github')
+        sv.logger.error('[pcrjjc_tw_new] 根据201获取不到对应PCR解包资源的表名，请反馈至Github')
         return
 
     # 下载实际资源

@@ -1,6 +1,0 @@
-{
-    "proxy": {
-        "http": "http://localhost:1081",
-        "https": "http://localhost:1081"
-    }
-}

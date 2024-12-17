@@ -3,9 +3,10 @@ from re import finditer
 from struct import unpack
 from urllib.parse import unquote
 
-from hoshino import logger
+from yuiChyan.service import Service
 
 key = b'e806f6'
+sv = Service('pcrjjc_tw_new')
 
 
 def _dec_key(s) -> bytes:
@@ -70,7 +71,7 @@ def decrypt_xml(filename):
         version = '【未适配的新版本】'
         add_msg = '，请反馈至 Github Issue 进行适配'
 
-    logger.info('当前' + server_name + '账号配置文件使用的是' + version + '用户文件' + add_msg)
+    sv.logger.info('当前' + server_name + '账号配置文件使用的是' + version + '用户文件' + add_msg)
 
     return result
 
