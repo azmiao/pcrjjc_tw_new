@@ -5,7 +5,7 @@ import time
 import zhconv
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 
-from yuiChyan import local_font
+from yuiChyan import font_path
 from yuiChyan.core.princess import chara
 from yuiChyan.util import filter_message
 from .res_parse import read_knight_exp_rank
@@ -74,8 +74,8 @@ async def generate_info_pic(data, cx, uid):
     im_frame = im_frame.resize((100, 100))
     im.paste(im=im_frame, box=(39, 145), mask=im_frame)
 
-    font = ImageFont.truetype(local_font, 18)
-    font_resize = ImageFont.truetype(local_font, 16)
+    font = ImageFont.truetype(font_path, 18)
+    font_resize = ImageFont.truetype(font_path, 16)
 
     draw = ImageDraw.Draw(im)
     font_black = (77, 76, 81, 255)
@@ -257,7 +257,7 @@ async def generate_support_pic(data, uid):
     im = Image.open(os.path.join(current_path, 'img', 'support.png')).convert('RGBA')  # 支援图片模板
     im_frame = Image.open(os.path.join(current_path, 'img', 'frame', frame_tmp)).convert('RGBA')  # 头像框
 
-    fnt = ImageFont.truetype(font=local_font, size=30)
+    fnt = ImageFont.truetype(font=font_path, size=30)
     rgb = ImageColor.getrgb('#4e4e4e')
 
     # 判断玩家设置的支援角色应该存在的位置
@@ -289,7 +289,7 @@ async def generate_support_pic(data, uid):
 # 生成深域进度图片
 async def generate_talent_pic(data):
     im = Image.open(os.path.join(current_path, 'img', 'background.png')).convert('RGBA')
-    fnt = ImageFont.truetype(font=local_font, size=40)
+    fnt = ImageFont.truetype(font=font_path, size=40)
     rgb = ImageColor.getrgb('#4e4e4e')
     rgb_w = ImageColor.getrgb('#ffffff')
 
