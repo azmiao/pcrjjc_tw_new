@@ -6,7 +6,7 @@ from urllib.parse import unquote
 from yuiChyan.service import Service
 
 key = b'e806f6'
-sv = Service('pcrjjc_tw_new')
+sv = Service('pcrjjc_tw_new', need_help=True)
 
 
 def _dec_key(s) -> bytes:
