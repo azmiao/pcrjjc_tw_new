@@ -7,7 +7,7 @@ from copy import deepcopy
 
 from aiocqhttp import MessageSegment
 from httpx import ProxyError
-from nonebot import NoticeSession
+from nonebot import NoticeSession, on_notice
 
 from yuiChyan import get_bot
 from yuiChyan.exception import LakePermissionException
@@ -32,10 +32,6 @@ if os.path.exists(config):
     with open(config) as fp:
         root = json.load(fp)
 binds = root['arena_bind']
-
-# 读取代理配置
-with open(os.path.join(curPath, 'account.json')) as fp:
-    pInfo = json.load(fp)
 
 # 一些变量初始化
 cache = {}
@@ -100,7 +96,7 @@ def get_client():
         if judge_file(1):
             ac_info_first = decrypt_xml(os.path.join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_first = PcrClient(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
-                                     ac_info_first['TW_SERVER_ID'], pInfo['proxy'])
+                                     ac_info_first['TW_SERVER_ID'])
         else:
             client_first = None
         first_client_cache = client_first
@@ -110,7 +106,7 @@ def get_client():
         if judge_file(0):
             ac_info_other = decrypt_xml(os.path.join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_other = PcrClient(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
-                                     ac_info_other['TW_SERVER_ID'], pInfo['proxy'])
+                                     ac_info_other['TW_SERVER_ID'])
         else:
             client_other = None
         other_client_cache = client_other
@@ -263,7 +259,7 @@ res_dir = os.path.join(base_img_path, 'pcrjjc_tw_new')
 os.makedirs(res_dir, exist_ok=True)
 if not os.path.exists(os.path.join(res_dir, 'rank_exp.csv')):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(update_rank_exp())
+    loop.run_until_complete(updateData())
 
 
 # ========== ↑ ↑ ↑ 维护组功能 ↑ ↑ ↑ ==========
@@ -341,7 +337,7 @@ async def send_arena_sub_status(bot, ev):
 
 
 # 退群自动删除绑定
-@sv.on_notice('group_decrease.leave')
+@on_notice('group_decrease.leave')
 async def leave_notice(session: NoticeSession):
     global lck, binds
     uid = str(session.ctx['user_id'])

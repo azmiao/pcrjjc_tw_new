@@ -47,11 +47,10 @@ class PcrClient:
     def _makemd5(data_str) -> str:
         return md5((data_str + 'r!I@nt8e5i=').encode('utf8')).hexdigest()
 
-    def __init__(self, udid, short_udid, viewer_id, platform, proxy):
+    def __init__(self, udid, short_udid, viewer_id, platform):
         self.short_udid = short_udid
         self.viewer_id = viewer_id
         self.udid = udid
-        self.proxy = proxy
         self.platform = platform
         self.api_root = f'https://api{"" if platform == "1" else "5"}-pc.so-net.tw'
         self.shouldLogin = True
