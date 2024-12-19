@@ -164,39 +164,22 @@ async def judge_uid(uid_str, bot, ev):
 # ========== ↑ ↑ ↑ 读取 & 校验 ↑ ↑ ↑ ==========
 
 
-# ========== ↓ ↓ ↓ 插件信息功能 ↓ ↓ ↓ ==========
-
-
-@sv.on_match('查询竞技场订阅数')
-async def describe_number(bot, ev):
-    global binds, lck
-    async with lck:
-        await bot.send(ev, f'当前竞技场已订阅的账号数量为【{len(binds)}】个')
-
-
-# ========== ↑ ↑ ↑ 插件信息功能 ↑ ↑ ↑ ==========
-
-
 # ========== ↓ ↓ ↓ 维护组功能 ↓ ↓ ↓ ==========
 
-@sv.on_match('清空竞技场订阅')
+@sv.on_command('清空竞技场订阅', only_to_me=True, cmd_permission=SUPERUSER)
 async def on_match(bot, ev):
     global binds, lck
     async with lck:
-        if not check_permission(ev, SUPERUSER):
-            raise LakePermissionException(ev, None, SUPERUSER)
         num = len(binds)
         binds.clear()
         save_binds()
         await bot.send(ev, f'已清空全部【{num}】个已订阅账号！')
 
 
-@sv.on_match('全局启用竞技场推送')
+@sv.on_command('全局启用竞技场推送', only_to_me=True, cmd_permission=SUPERUSER)
 async def enable_all_push(bot, ev):
     global root, lck
     async with lck:
-        if not check_permission(ev, SUPERUSER):
-            raise LakePermissionException(ev, None, SUPERUSER)
         root['global_push'] = True
         with open(config, 'w') as file:
             # noinspection PyTypeChecker
@@ -204,12 +187,10 @@ async def enable_all_push(bot, ev):
         await bot.send(ev, f'已全局启用竞技场推送！')
 
 
-@sv.on_match('全局禁用竞技场推送', only_to_me=True)
+@sv.on_command('全局禁用竞技场推送', only_to_me=True, cmd_permission=SUPERUSER)
 async def disable_all_push(bot, ev):
     global root, lck
     async with lck:
-        if not check_permission(ev, SUPERUSER):
-            raise LakePermissionException(ev, None, SUPERUSER)
         root['global_push'] = False
         with open(config, 'w') as file:
             # noinspection PyTypeChecker
@@ -255,12 +236,10 @@ async def update_rank_exp():
 
 
 # 手动刷新竞技场缓存
-@sv.on_prefix('手动刷新竞技场缓存', only_to_me=True)
+@sv.on_command('手动刷新竞技场缓存', only_to_me=True, cmd_permission=SUPERUSER)
 async def clear_cache(bot, ev):
     global lck, first_client_cache, other_client_cache, root, binds
     async with lck:
-        if not check_permission(ev, SUPERUSER):
-            raise LakePermissionException(ev, None, SUPERUSER)
         # 清理缓存
         first_client_cache = None
         other_client_cache = None
