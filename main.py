@@ -1,5 +1,6 @@
 import asyncio
 import json
+import math
 import os
 import time
 from asyncio import Lock
@@ -68,6 +69,7 @@ if not os.path.exists(current_dir):
     with open(current_dir, 'w', encoding='UTF-8') as f:
         # noinspection PyTypeChecker
         json.dump(data, f, indent=4, ensure_ascii=False)
+
 
 # ========== ↑ ↑ ↑ 启动时检查文件 ↑ ↑ ↑ ==========
 
@@ -608,4 +610,22 @@ async def on_arena_schedule():
                     except Exception as _:
                         sv.logger.error(f'bot账号{sid}不在群{group_id}中，将忽略该消息')
 
+
 # ========== ↑ ↑ ↑ 推送 & 历史 ↑ ↑ ↑ ==========
+
+
+@sv.on_rex(r'击剑(路径|路线)( )?(.{0,5})$')
+async def arena_route(bot, ev):
+    num = int(ev['match'].group(3))
+    r = {}
+    rank = 0
+    while num > 1:
+        rank += 1
+        if num <= 11:
+            num = 1
+        elif num < 69:
+            num -= 10
+        else:
+            num = math.floor(num * 0.85)
+        r[rank] = num
+    await bot.send(ev, '> 近5次最优击剑路径：' + ','.join(map(str, list(r.values())[:5])), at_sender=True)
