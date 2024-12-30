@@ -292,7 +292,7 @@ async def on_arena_bind(bot, ev):
         msg = '竞技场绑定成功'
         msg += f'\n注：本bot未识别到台服{cx}服配置文件，因此查询该服的玩家信息功能不可用，请联系维护组解决' if not is_file else ''
 
-    await bot.finish(ev, msg, at_sender=True)
+    await bot.send(ev, msg, at_sender=True)
 
 
 # 订阅删除方法
@@ -319,7 +319,7 @@ async def delete_arena_sub(bot, ev):
     async with lck:
         delete_arena(user_id)
 
-    await bot.finish(ev, '删除竞技场订阅成功', at_sender=True)
+    await bot.send(ev, '删除竞技场订阅成功', at_sender=True)
 
 
 @sv.on_match('竞技场订阅状态')
@@ -331,7 +331,7 @@ async def send_arena_sub_status(bot, ev):
         await bot.send(ev, '您还未绑定竞技场', at_sender=True)
     else:
         info = binds[uid]
-        await bot.finish(ev,
+        await bot.send(ev,
                          f'''
     当前竞技场绑定ID：{info['id']}
     竞技场订阅：{'开启' if info['arena_on'] else '关闭'}
@@ -470,10 +470,12 @@ async def change_frame(bot, ev):
     path = os.path.join(os.path.dirname(__file__), 'img/frame/')
     frame_list = os.listdir(path)
     if not frame_list:
-        await bot.finish(ev, 'img/frame/路径下没有任何头像框，请联系维护组检查目录')
+        await bot.send(ev, 'img/frame/路径下没有任何头像框，请联系维护组检查目录')
+        return
     if frame_tmp not in frame_list:
         msg = f'文件名输入错误，命令样例：\n竞技场换头像框 color.png\n目前可选文件有：\n' + '\n'.join(frame_list)
-        await bot.finish(ev, msg)
+        await bot.send(ev, msg)
+        return
     frame_data = {str(user_id): frame_tmp}
     frame_dir = os.path.join(os.path.dirname(__file__), 'frame.json')
     with open(frame_dir, 'r', encoding='UTF-8') as file:
@@ -523,7 +525,7 @@ async def change_arena_sub(bot, ev):
         else:
             binds[user_id][key] = ev['match'].group(1) == '启用'
             save_binds()
-            await bot.finish(ev, f'{ev["match"].group(0)}成功', at_sender=True)
+            await bot.send(ev, f'{ev["match"].group(0)}成功', at_sender=True)
 
 
 # 自动推送 | 默认周期为3分钟
