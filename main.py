@@ -588,13 +588,13 @@ async def on_arena_schedule():
                 msg_dict[int(gid)] = list_get
 
         except ApiException as e:
-            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错' + str(e))
+            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错: {type(e)} {str(e)}')
             if e.code == 6:
                 async with lck:
                     delete_arena(user_id)
                 sv.logger.error(f'已经自动删除错误的uid={game_id}')
         except Exception as e:
-            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错' + str(e))
+            sv.logger.error(f'对台服{cx}服的{game_id}的检查出错: {type(e)} {str(e)}')
 
     # 开始分群发送消息
     if msg_dict:
