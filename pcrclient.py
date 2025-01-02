@@ -47,13 +47,14 @@ class PcrClient:
     def _makemd5(data_str) -> str:
         return md5((data_str + 'r!I@nt8e5i=').encode('utf8')).hexdigest()
 
-    def __init__(self, udid, short_udid, viewer_id, platform):
+    def __init__(self, udid, short_udid, viewer_id, platform, session_name):
         self.short_udid = short_udid
         self.viewer_id = viewer_id
         self.udid = udid
         self.platform = platform
         self.api_root = f'https://api{"" if platform == "1" else "5"}-pc.so-net.tw'
         self.shouldLogin = True
+        self.session_name = session_name
 
         header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
         with open(header_path, 'r', encoding='UTF-8') as f:
@@ -118,7 +119,7 @@ class PcrClient:
                     'utf8')).hexdigest()
             self.headers['SHORT-UDID'] = PcrClient._encode(self.short_udid)
 
-            session = get_session_or_create('PcrClient', True, PROXY)
+            session = get_session_or_create(self.session_name, True, PROXY)
             resp = await session.post(self.api_root + api_url,
                                       data=crypto,
                                       headers=self.headers,

@@ -6,6 +6,7 @@ import time
 from asyncio import Lock
 from copy import deepcopy
 
+import httpx
 from aiocqhttp import MessageSegment
 from httpx import ProxyError
 from nonebot import NoticeSession, on_notice
@@ -87,7 +88,7 @@ def judge_file(cx_id: int):
 
 
 # 获取配置文件
-def get_client():
+def get_client(session_name: str = 'PcrClient'):
     global first_client_cache, other_client_cache
 
     ac_info_first = {'admin': ''}
@@ -98,7 +99,7 @@ def get_client():
         if judge_file(1):
             ac_info_first = decrypt_xml(os.path.join(curPath, 'first_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_first = PcrClient(ac_info_first['UDID'], ac_info_first['SHORT_UDID'], ac_info_first['VIEWER_ID'],
-                                     ac_info_first['TW_SERVER_ID'])
+                                     ac_info_first['TW_SERVER_ID'], f'{session_name}First')
         else:
             client_first = None
         first_client_cache = client_first
@@ -108,7 +109,7 @@ def get_client():
         if judge_file(0):
             ac_info_other = decrypt_xml(os.path.join(curPath, 'other_tw.sonet.princessconnect.v2.playerprefs.xml'))
             client_other = PcrClient(ac_info_other['UDID'], ac_info_other['SHORT_UDID'], ac_info_other['VIEWER_ID'],
-                                     ac_info_other['TW_SERVER_ID'])
+                                     ac_info_other['TW_SERVER_ID'], f'{session_name}Other')
         else:
             client_other = None
         other_client_cache = client_other
@@ -126,7 +127,7 @@ async def query(uid):
         try:
             res = await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)})
             return res
-        except ApiException as _:
+        except ApiException or httpx.ConnectError or httpx.ConnectTimeout or httpx.ReadTimeout:
             sv.logger.error('竞技场接口：登录超时或失败，将尝试一次重新登录，正在重新登录...')
         while cur_client.shouldLogin:
             await cur_client.login()
@@ -395,8 +396,8 @@ async def on_query_arena(bot, ev):
             msg = f'''
 区服：{cx_name}
 昵称：{res['user_info']["user_name"]}
-jjc排名：{res['user_info']["arena_rank"]}  ({res['user_info']["arena_group"]}场)
-pjjc排名：{res['user_info']["grand_arena_rank"]}  ({res['user_info']["grand_arena_group"]}场)
+JJC排名：{res['user_info']["arena_rank"]}  ({res['user_info']["arena_group"]}场)
+PJJC排名：{res['user_info']["grand_arena_rank"]}  ({res['user_info']["grand_arena_group"]}场)
 最后登录：{last_login_str}'''.strip()
 
             await bot.send(ev, msg, at_sender=False)
