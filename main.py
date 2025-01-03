@@ -127,7 +127,7 @@ async def query(uid):
         try:
             res = await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)})
             return res
-        except (ApiException, httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout):
+        except (ApiException, httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.PoolTimeout):
             cur_client.shouldLogin = True
             sv.logger.error('竞技场接口：登录超时或失败，将尝试一次重新登录，正在重新登录...')
         while cur_client.shouldLogin:
