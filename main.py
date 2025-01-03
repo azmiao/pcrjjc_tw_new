@@ -20,6 +20,7 @@ from .create_img import generate_info_pic, generate_support_pic, _get_cx_name, g
 from .pcrclient import PcrClient, ApiException, default_headers
 from .playerpref import decrypt_xml, sv
 from .res_parse import updateData
+from ...http_request import close_async_session, get_session_or_create
 
 # ========== ↓ ↓ ↓ 配置读取 ↓ ↓ ↓ ==========
 
@@ -121,15 +122,21 @@ def get_client(session_name: str = 'PcrClient'):
 async def query(uid):
     client_first, client_other, _, _ = get_client()
     cur_client = client_first if uid.startswith('1') else client_other
+    session_name = 'PcrClientFirst' if uid.startswith('1') else 'PcrClientOther'
     if cur_client is None:
         return {'lack share_prefs': {}}
     async with qLck:
         try:
             res = await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)})
             return res
-        except (ApiException, httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout, httpx.PoolTimeout):
+        except (ApiException, httpx.ConnectError, httpx.ReadTimeout):
             cur_client.shouldLogin = True
-            sv.logger.error('竞技场接口：登录超时或失败，将尝试一次重新登录，正在重新登录...')
+            sv.logger.error('竞技场接口：调用接口失败，将尝试一次重新登录，正在重新登录...')
+        except (httpx.ConnectTimeout, httpx.PoolTimeout):
+            cur_client.shouldLogin = True
+            session = get_session_or_create(session_name, True)
+            await close_async_session(session_name, session)
+            sv.logger.error('竞技场接口：线程池超时，将尝试一次重新登录，正在重新登录...')
         while cur_client.shouldLogin:
             await cur_client.login()
         res = await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)})
