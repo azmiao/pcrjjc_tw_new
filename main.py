@@ -136,7 +136,6 @@ async def query(uid):
             cur_client.shouldLogin = True
             session = get_session_or_create(session_name, True)
             await close_async_session(session_name, session)
-            sv.logger.error('竞技场接口：线程池超时，将尝试一次重新登录，正在重新登录...')
         while cur_client.shouldLogin:
             await cur_client.login()
         res = await cur_client.callapi('/profile/get_profile', {'target_viewer_id': int(uid)})
