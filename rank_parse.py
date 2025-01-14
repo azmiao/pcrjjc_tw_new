@@ -11,14 +11,14 @@ async def calculate_rank(experience: int) -> (bool, int):
     # 等级1到125
     if experience < base_experience * 125:
         level = experience // base_experience
-        return level + 1
+        return True, level + 1
 
     # 等级126到201
     experience -= base_experience * 124
     base_experience = 53236
     if experience < base_experience * 76:
         level = experience // base_experience
-        return level + 125
+        return True, level + 125
 
     # 等级202及以上
     experience -= base_experience * 76
