@@ -352,7 +352,7 @@ async def generate_talent_pic(data):
     bbox = (701, 849)
     im.paste(im=knight_img, box=bbox, mask=knight_img)
     quest_draw.text(xy=(725, 860), text='公主骑士RANK', font=fnt, fill=rgb_w)
-    knight_rank = await query_knight_exp_rank(knight_exp)
+    knight_rank = await query_knight_exp_rank(int(knight_exp))
     quest_draw.text(xy=(1080, 858), text=str(knight_rank), font=fnt, fill=rgb)
 
     return im
