@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 from asyncio import Lock
@@ -7,7 +6,7 @@ from json import load, dump
 from os.path import dirname, join, exists
 
 import requests
-from hoshino import priv, get_bot, get_self_ids, R
+from hoshino import priv, get_bot, get_self_ids
 from hoshino.typing import NoticeSession, MessageSegment
 from hoshino.util import pic2b64
 
@@ -15,7 +14,6 @@ from .create_img import generate_info_pic, generate_support_pic, _get_cx_name, g
 from .jjchistory import *
 from .pcrclient import PcrClient, ApiException, default_headers
 from .playerpref import decrypt_xml
-from .res_parse import updateData
 from .safeservice import SafeService
 
 sv_help = '''
@@ -324,13 +322,6 @@ async def update_ver(bot, ev):
     await bot.send(ev, f'pcrjjc_tw_new的游戏版本为{headers.get("APP-VER", "")}')
 
 
-# 自动更新解包数据
-@sv.scheduled_job('cron', id='daily_rank_exp_res', day=f'1/1', hour='2', minute='30')
-async def update_rank_exp():
-    await updateData()
-    sv.logger.info('"rank_exp.csv" 已经更新到最新版本')
-
-
 # 手动刷新竞技场缓存
 @sv.on_prefix('手动刷新竞技场缓存', only_to_me=True)
 async def clear_cache(bot, ev):
@@ -355,14 +346,6 @@ async def refresh_binds():
         with open(config) as file:
             root = load(file)
     binds = root['arena_bind']
-
-
-# 首次启动
-if not os.path.exists(R.img('pcrjjc_tw_new').path):
-    os.mkdir(R.img('pcrjjc_tw_new').path)
-if not os.path.exists(os.path.join(R.img('pcrjjc_tw_new').path, 'rank_exp.csv')):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(update_rank_exp())
 
 
 # ========== ↑ ↑ ↑ 维护组功能 ↑ ↑ ↑ ==========
