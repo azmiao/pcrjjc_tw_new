@@ -154,6 +154,7 @@ def save_headers_config(header_config: dict[str, str]):
 
 # 更新headers的版本号
 def update_headers_with_version(version: str):
+    global query_lock
     # 更新headers配置的版本
     headers_config = get_headers_config()
     headers_config['APP-VER'] = version
