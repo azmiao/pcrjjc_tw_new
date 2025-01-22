@@ -78,7 +78,7 @@ async def get_binds_config() -> dict[str, bool | dict]:
         # 没有文件 | 创建
         with open(config_path, 'w', encoding='utf-8') as _f:
             # noinspection PyTypeChecker
-            json.dump(_f, default_config, indent=4, ensure_ascii=False)
+            json.dump(default_config, _f, indent=4, ensure_ascii=False)
         config = default_config
     else:
         # 有文件 | 读取
@@ -91,7 +91,7 @@ async def get_binds_config() -> dict[str, bool | dict]:
 async def save_binds_config(config: dict):
     with open(config_path, 'w', encoding='utf-8') as _f:
         # noinspection PyTypeChecker
-        json.dump(_f, config, indent=4, ensure_ascii=False)
+        json.dump(config, _f, indent=4, ensure_ascii=False)
 
 
 # 查询PCR客户端配置
@@ -138,7 +138,7 @@ def get_headers_config() -> dict[str, str]:
         # 没有文件 | 创建
         with open(header_path, 'w', encoding='utf-8') as _f:
             # noinspection PyTypeChecker
-            json.dump(_f, default_headers, indent=4, ensure_ascii=False)
+            json.dump(default_headers, _f, indent=4, ensure_ascii=False)
         header_config = default_headers
     else:
         # 有文件 | 读取
@@ -155,7 +155,7 @@ get_headers_config()
 def save_headers_config(header_config: dict[str, str]):
     with open(header_path, 'w', encoding='utf-8') as _f:
         # noinspection PyTypeChecker
-        json.dump(_f, header_config, indent=4, ensure_ascii=False)
+        json.dump(header_config, _f, indent=4, ensure_ascii=False)
 
 
 # 更新headers的版本号
