@@ -1,3 +1,5 @@
+import json
+import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 from random import choice
@@ -7,8 +9,6 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
 from httpx import AsyncClient
 from msgpack import packb, unpackb
-
-from .util import get_headers_config
 
 
 class ApiException(Exception):
@@ -32,7 +32,10 @@ class PcrClient:
         self.shouldLogin = True
         self.async_session = async_session
         # 获取请求头
-        self.headers = get_headers_config()
+        header_path: str = os.path.join(os.path.dirname(__file__), 'headers.json')
+        with open(header_path, 'r', encoding='utf-8') as _f:
+            header_config = json.load(_f)
+        self.headers = header_config
         self.headers['SID'] = PcrClient._makemd5(viewer_id + udid)
         # 手机类型：苹果/安卓
         self.headers['platform'] = '2'

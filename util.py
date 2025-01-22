@@ -147,6 +147,10 @@ def get_headers_config() -> dict[str, str]:
     return header_config
 
 
+# 启动生成headers
+get_headers_config()
+
+
 # 保存headers配置文件
 def save_headers_config(header_config: dict[str, str]):
     with open(header_path, 'w', encoding='utf-8') as _f:
