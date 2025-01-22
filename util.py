@@ -1,16 +1,18 @@
 import json
 import os
 from asyncio import Lock
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import zhconv
 
-from .pcr_client import PcrClient
-from .player_pref import decrypt_xml
 from yuiChyan import CQEvent, base_img_path
-from yuiChyan.exception import CommandErrorException
 from yuiChyan.config import PROXY
+from yuiChyan.exception import CommandErrorException
 from yuiChyan.http_request import get_session_or_create
+from .player_pref import decrypt_xml
+
+if TYPE_CHECKING:
+    from .pcr_client import PcrClient
 
 # 资源文件夹
 res_dir = os.path.join(base_img_path, 'pcrjjc_tw_new')
@@ -49,8 +51,8 @@ rank_cache: dict[str, tuple[int, int]] = {}
 # 查询异步锁
 query_lock: Lock = Lock()
 # 全局缓存的PCR客户端
-first_client_cache: Optional[PcrClient] = None
-other_client_cache: Optional[PcrClient] = None
+first_client_cache: Optional['PcrClient'] = None
+other_client_cache: Optional['PcrClient'] = None
 
 
 # 检验UID
@@ -100,7 +102,7 @@ async def get_client_config(cx_id: int) -> Optional[str]:
 
 
 # 获取PCR客户端
-async def get_client() -> (Optional[PcrClient], Optional[PcrClient]):
+async def get_client() -> (Optional['PcrClient'], Optional['PcrClient']):
     global first_client_cache, other_client_cache
 
     # 1服
