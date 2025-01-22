@@ -154,7 +154,6 @@ def save_headers_config(header_config: dict[str, str]):
 
 # 更新headers的版本号
 def update_headers_with_version(version: str):
-    global query_lock
     # 更新headers配置的版本
     headers_config = get_headers_config()
     headers_config['APP-VER'] = version
@@ -162,11 +161,10 @@ def update_headers_with_version(version: str):
 
     # 更新缓存的版本
     global first_client_cache, other_client_cache
-    async with query_lock:
-        if first_client_cache:
-            first_client_cache.update_version(version)
-        if other_client_cache:
-            other_client_cache.update_version(version)
+    if first_client_cache:
+        first_client_cache.update_version(version)
+    if other_client_cache:
+        other_client_cache.update_version(version)
 
 
 # 获取服务器名称
