@@ -1,7 +1,7 @@
 import json
 import os
 from asyncio import Lock
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 import zhconv
 
@@ -9,10 +9,8 @@ from yuiChyan import CQEvent, base_img_path
 from yuiChyan.config import PROXY
 from yuiChyan.exception import CommandErrorException
 from yuiChyan.http_request import get_session_or_create
+from .pcr_client import PcrClient
 from .player_pref import decrypt_xml
-
-if TYPE_CHECKING:
-    from .pcr_client import PcrClient
 
 # 资源文件夹
 res_dir = os.path.join(base_img_path, 'pcrjjc_tw_new')
