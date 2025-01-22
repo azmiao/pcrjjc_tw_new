@@ -119,7 +119,7 @@ async def get_client() -> (Optional['PcrClient'], Optional['PcrClient']):
     if other_client_cache is None and await get_client_config(5):
         ac_info_other = decrypt_xml(await get_client_config(5))
         _async_session = get_session_or_create('PcrClientOther', True, PROXY)
-        first_client_cache = PcrClient(
+        other_client_cache = PcrClient(
             ac_info_other['UDID'],
             ac_info_other['SHORT_UDID'],
             ac_info_other['VIEWER_ID'],
