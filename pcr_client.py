@@ -1,5 +1,3 @@
-import json
-import os
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 from random import choice
@@ -7,32 +5,10 @@ from random import randint
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad, pad
+from httpx import AsyncClient
 from msgpack import packb, unpackb
 
-from yuiChyan.config import PROXY
-from yuiChyan.http_request import get_session_or_create
-
-# 默认headers
-default_headers = {
-    'Accept-Encoding': 'deflate, gzip',
-    'User-Agent': 'UnityPlayer/2021.3.20f1 (UnityWebRequest/1.0, libcurl/7.84.0-DEV)',
-    'Content-Type': 'application/octet-stream',
-    'Expect': '100-continue',
-    'X-Unity-Version': '2021.3.20f1',
-    'APP-VER': '4.4.0',
-    'BATTLE-LOGIC-VERSION': '4',
-    'BUNDLE-VER': '',
-    'DEVICE': '2',
-    'DEVICE-ID': '7b1703a5d9b394e24051d7a5d4818f17',
-    'DEVICE-NAME': 'OPPO PCRM00',
-    'GRAPHICS-DEVICE-NAME': 'Adreno (TM) 640',
-    'IP-ADDRESS': '10.0.2.15',
-    'KEYCHAIN': '',
-    'LOCALE': 'Jpn',
-    'PLATFORM-OS-VERSION': 'Android OS 5.1.1 / API-22 (LMY48Z/rel.se.infra.20200612.100533)',
-    'REGION-CODE': '',
-    'RES-VER': '00150001'
-}
+from .util import get_headers_config
 
 
 class ApiException(Exception):
@@ -47,21 +23,25 @@ class PcrClient:
     def _makemd5(data_str) -> str:
         return md5((data_str + 'r!I@nt8e5i=').encode('utf8')).hexdigest()
 
-    def __init__(self, udid, short_udid, viewer_id, platform, session_name):
+    def __init__(self, udid, short_udid, viewer_id, platform, async_session: AsyncClient):
         self.short_udid = short_udid
         self.viewer_id = viewer_id
         self.udid = udid
         self.platform = platform
         self.api_root = f'https://api{"" if platform == "1" else "5"}-pc.so-net.tw'
         self.shouldLogin = True
-        self.session_name = session_name
-
-        header_path = os.path.join(os.path.dirname(__file__), 'headers.json')
-        with open(header_path, 'r', encoding='UTF-8') as f:
-            self.headers = json.load(f)
+        self.async_session = async_session
+        # 获取请求头
+        self.headers = get_headers_config()
         self.headers['SID'] = PcrClient._makemd5(viewer_id + udid)
         # 手机类型：苹果/安卓
         self.headers['platform'] = '2'
+
+    def update_async_session(self, _async_session: AsyncClient):
+        self.async_session = _async_session
+
+    def update_version(self, version: str):
+        self.headers['APP-VER'] = version
 
     @staticmethod
     def create_key() -> bytes:
@@ -119,11 +99,10 @@ class PcrClient:
                     'utf8')).hexdigest()
             self.headers['SHORT-UDID'] = PcrClient._encode(self.short_udid)
 
-            session = get_session_or_create(self.session_name, True, PROXY)
-            resp = await session.post(self.api_root + api_url,
-                                      data=crypto,
-                                      headers=self.headers,
-                                      timeout=5)
+            resp = await self.async_session.post(self.api_root + api_url,
+                                                 data=crypto,
+                                                 headers=self.headers,
+                                                 timeout=5)
             response = resp.content
 
             response = self.unpack(response)[0]

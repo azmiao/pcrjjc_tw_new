@@ -1,70 +1,18 @@
-import json
-import os
 import time
 
-import zhconv
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 
 from yuiChyan import font_path
 from yuiChyan.core.princess import chara
 from yuiChyan.util import filter_message
 from .rank_parse import query_knight_exp_rank
-
-current_path = os.path.dirname(__file__)
-
-
-def get_frame(user_id):
-    current_dir = os.path.join(current_path, 'frame.json')
-    with open(current_dir, 'r', encoding='UTF-8') as f:
-        f_data = json.load(f)
-    id_list = list(f_data['customize'].keys())
-    if user_id not in id_list:
-        frame_tmp = f_data['default_frame']
-    else:
-        frame_tmp = f_data['customize'][user_id]
-    return frame_tmp
+from .util import *
 
 
-def _traditional_to_simplified(zh_str: str):
-    """
-    Function: 将 zh_str 由繁体转化为简体
-    """
-    return zhconv.convert(str(zh_str), 'zh-hans')
-
-
-def _cut_str(obj: str, sec: int):
-    """
-    按步长分割字符串
-    """
-    return [obj[i: i + sec] for i in range(0, len(obj), sec)]
-
-
-def _get_cx_name(cx):
-    """
-    获取服务器名称
-    """
-    match cx:
-        case '1':
-            cx_name = '美食殿堂'
-        case '2':
-            cx_name = '真步王国'
-        case '3':
-            cx_name = '破晓之星'
-        case '4':
-            cx_name = '小小甜心'
-        case _:
-            cx_name = '未知'
-    return cx_name
-
-
-async def generate_info_pic(data, cx, uid):
-    """
-    个人资料卡生成
-    """
-    frame_tmp = get_frame(uid)
-
+# 个人资料卡
+async def generate_info_pic(data, cx):
     im = Image.open(os.path.join(current_path, 'img', 'template.png')).convert('RGBA')  # 图片模板
-    im_frame = Image.open(os.path.join(current_path, 'img', 'frame', f'{frame_tmp}')).convert('RGBA')  # 头像框
+    im_frame = Image.open(os.path.join(current_path, 'img', 'frame', f'color.png')).convert('RGBA')  # 头像框
     id_favorite = int(str(data['favorite_unit']['id'])[:4])  # 截取第1位到第4位的字符
 
     pic_dir = await chara.get_chara_by_id(id_favorite).get_icon_path()
@@ -81,19 +29,19 @@ async def generate_info_pic(data, cx, uid):
     font_black = (77, 76, 81, 255)
 
     # 资料卡 个人信息
-    user_name_text = _traditional_to_simplified(data["user_info"]["user_name"])
+    user_name_text = traditional_to_simplified(data["user_info"]["user_name"])
     user_name_text = await filter_message(str(user_name_text))
-    team_level_text = _traditional_to_simplified(data["user_info"]["team_level"])
+    team_level_text = traditional_to_simplified(data["user_info"]["team_level"])
     team_level_text = await filter_message(str(team_level_text))
-    total_power_text = _traditional_to_simplified(
+    total_power_text = traditional_to_simplified(
         data["user_info"]["total_power"])
     total_power_text = await filter_message(str(total_power_text))
-    clan_name_text = _traditional_to_simplified(data["clan_name"])
+    clan_name_text = traditional_to_simplified(data["clan_name"])
     clan_name_text = await filter_message(str(clan_name_text))
-    user_comment_arr = _traditional_to_simplified(data["user_info"]["user_comment"])
+    user_comment_arr = traditional_to_simplified(data["user_info"]["user_comment"])
     user_comment_arr = await filter_message(str(user_comment_arr))
-    user_comment_arr = _cut_str(user_comment_arr, 25)
-    last_login_time_text = _traditional_to_simplified(time.strftime(
+    user_comment_arr = cut_str(user_comment_arr, 25)
+    last_login_time_text = traditional_to_simplified(time.strftime(
         "%Y/%m/%d %H:%M:%S", time.localtime(data["user_info"]["last_login_time"]))).split(' ')
 
     draw.text((194, 120), user_name_text, font_black, font)
@@ -117,16 +65,16 @@ async def generate_info_pic(data, cx, uid):
               '> 最后登录时间：\n' + last_login_time_text[0] + "\n" + last_login_time_text[1],
               font_black,
               font_resize)
-    draw.text((34, 410), '> 区服：' + _get_cx_name(cx), font_black, font_resize)
+    draw.text((34, 410), '> 区服：' + get_cx_name(cx), font_black, font_resize)
 
     # 资料卡 冒险经历
-    normal_quest_text = _traditional_to_simplified(
+    normal_quest_text = traditional_to_simplified(
         data["quest_info"]["normal_quest"][2])
-    hard_quest_text = _traditional_to_simplified(
+    hard_quest_text = traditional_to_simplified(
         data["quest_info"]["hard_quest"][2])
-    very_hard_quest_text = _traditional_to_simplified(
+    very_hard_quest_text = traditional_to_simplified(
         data["quest_info"]["very_hard_quest"][2])
-    byway_quest_text = _traditional_to_simplified(
+    byway_quest_text = traditional_to_simplified(
         data["quest_info"]["byway_quest"])
 
     up_quest_text = "N" + normal_quest_text + " / SUB" + byway_quest_text
@@ -137,16 +85,16 @@ async def generate_info_pic(data, cx, uid):
     w = font_resize.getlength(down_quest_text)
     draw.text((550 - w, 530), down_quest_text, font_black, font_resize)
 
-    arena_group_text = _traditional_to_simplified(
+    arena_group_text = traditional_to_simplified(
         data["user_info"]["arena_group"])
-    arena_time_text = _traditional_to_simplified(time.strftime(
+    arena_time_text = traditional_to_simplified(time.strftime(
         "%Y/%m/%d", time.localtime(data["user_info"]["arena_time"])))
-    arena_rank_text = _traditional_to_simplified(data["user_info"]["arena_rank"])
-    grand_arena_group_text = _traditional_to_simplified(
+    arena_rank_text = traditional_to_simplified(data["user_info"]["arena_rank"])
+    grand_arena_group_text = traditional_to_simplified(
         data["user_info"]["grand_arena_group"])
-    grand_arena_time_text = _traditional_to_simplified(time.strftime(
+    grand_arena_time_text = traditional_to_simplified(time.strftime(
         "%Y/%m/%d", time.localtime(data["user_info"]["grand_arena_time"])))
-    grand_arena_rank_text = _traditional_to_simplified(
+    grand_arena_rank_text = traditional_to_simplified(
         data["user_info"]["grand_arena_rank"])
 
     w = font_resize.getlength(arena_time_text)
@@ -162,8 +110,8 @@ async def generate_info_pic(data, cx, uid):
     w = font_resize.getlength(grand_arena_rank_text + " 名")
     draw.text((550 - w, 772), grand_arena_rank_text + " 名", font_black, font_resize)
 
-    unit_num_text = _traditional_to_simplified(data["user_info"]["unit_num"])
-    open_story_num_text = _traditional_to_simplified(
+    unit_num_text = traditional_to_simplified(data["user_info"]["unit_num"])
+    open_story_num_text = traditional_to_simplified(
         data["user_info"]["open_story_num"])
 
     w = font_resize.getlength(unit_num_text)
@@ -171,9 +119,9 @@ async def generate_info_pic(data, cx, uid):
     w = font_resize.getlength(open_story_num_text)
     draw.text((550 - w, 880), open_story_num_text, font_black, font_resize)
 
-    tower_cleared_floor_num_text = _traditional_to_simplified(
+    tower_cleared_floor_num_text = traditional_to_simplified(
         data["user_info"]["tower_cleared_floor_num"])
-    tower_cleared_ex_quest_count_text = _traditional_to_simplified(
+    tower_cleared_ex_quest_count_text = traditional_to_simplified(
         data["user_info"]["tower_cleared_ex_quest_count"])
 
     w = font_resize.getlength(tower_cleared_floor_num_text + " 阶")
@@ -182,9 +130,9 @@ async def generate_info_pic(data, cx, uid):
     w = font_resize.getlength(tower_cleared_ex_quest_count_text)
     draw.text((550 - w, 984), tower_cleared_ex_quest_count_text, font_black, font_resize)
 
-    simplified = _traditional_to_simplified(data["user_info"]["viewer_id"])
+    simplified = traditional_to_simplified(data["user_info"]["viewer_id"])
     cx = simplified[:1]
-    viewer_id_arr = _cut_str(simplified[1:], 3)
+    viewer_id_arr = cut_str(simplified[1:], 3)
 
     w = font.getlength(
         cx + "  " + viewer_id_arr[0] + "  " + viewer_id_arr[1] + "  " + viewer_id_arr[2])
@@ -195,10 +143,8 @@ async def generate_info_pic(data, cx, uid):
     return im
 
 
+# 好友支援位
 async def _friend_support_position(fr_data, im, fnt, rgb, im_frame, bbox):
-    """
-    好友支援位
-    """
     # 合成头像
     im_item = Image.open(os.path.join(current_path, 'img', 'item.png')).convert('RGBA')  # 一个支援ui模板
     id_friend_support = int(str(fr_data['unit_data']['id'])[0:4])
@@ -211,7 +157,7 @@ async def _friend_support_position(fr_data, im, fnt, rgb, im_frame, bbox):
 
     # 合成文字信息
     item_draw = ImageDraw.Draw(im_item)
-    icon_name_text = _traditional_to_simplified(chara.get_chara_by_id(id_friend_support).name)
+    icon_name_text = traditional_to_simplified(chara.get_chara_by_id(id_friend_support).name)
     icon_LV_text = str(fr_data['unit_data']['unit_level'])  # 写入文本必须是str格式
     icon_rank_text = str(fr_data['unit_data']['promotion_level'])
     item_draw.text(xy=(167, 36.86), text=icon_name_text, font=fnt, fill=rgb)
@@ -238,7 +184,7 @@ async def _clan_support_position(clan_data, im, fnt, rgb, im_frame, bbox):
 
     # 合成文字信息
     icon_draw = ImageDraw.Draw(im_item)
-    icon_name_text = _traditional_to_simplified(chara.get_chara_by_id(id_clan_support).name)
+    icon_name_text = traditional_to_simplified(chara.get_chara_by_id(id_clan_support).name)
     icon_LV_text = str(clan_data['unit_data']['unit_level'])  # 写入文本必须是str格式
     icon_rank_text = str(clan_data['unit_data']['promotion_level'])
     icon_draw.text(xy=(167, 36.86), text=icon_name_text, font=fnt, fill=rgb)
@@ -249,13 +195,10 @@ async def _clan_support_position(clan_data, im, fnt, rgb, im_frame, bbox):
     return im
 
 
-async def generate_support_pic(data, uid):
-    """
-    支援界面图片合成
-    """
-    frame_tmp = get_frame(uid)
+# 支援界面图片合成
+async def generate_support_pic(data):
     im = Image.open(os.path.join(current_path, 'img', 'support.png')).convert('RGBA')  # 支援图片模板
-    im_frame = Image.open(os.path.join(current_path, 'img', 'frame', frame_tmp)).convert('RGBA')  # 头像框
+    im_frame = Image.open(os.path.join(current_path, 'img', 'frame', 'color.png')).convert('RGBA')  # 头像框
 
     fnt = ImageFont.truetype(font=font_path, size=30)
     rgb = ImageColor.getrgb('#4e4e4e')
