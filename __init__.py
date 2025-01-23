@@ -33,7 +33,7 @@ async def query(uid: str):
         except ApiException:
             # 一般的请求异常 | 可尝试一次重新登录请求
             cur_client.shouldLogin = True
-        except httpx.TimeoutException:
+        except httpx.TransportError:
             # 特殊的请求异常 | 可能需要重建会话重新登录
             cur_client.shouldLogin = True
             # 重建并更新会话至客户端
