@@ -351,19 +351,18 @@ async def on_arena_schedule():
 
     # 开始分群发送消息
     if msg_dict:
-        for sid in bot.get_self_ids():
-            for group_id in msg_dict:
-                list_get = msg_dict.get(group_id, [])
-                if list_get:
-                    msg_end = '\n'.join(list_get)
-                    try:
-                        await bot.send_group_msg(
-                            self_id=sid,
-                            group_id=group_id,
-                            message=msg_end.strip()
-                        )
-                    except Exception as _:
-                        sv.logger.error(f'bot账号{sid}不在群{group_id}中，将忽略该消息')
+        for group_id in msg_dict:
+            list_get = msg_dict.get(group_id, [])
+            if list_get:
+                msg_end = '\n'.join(list_get)
+                try:
+                    await bot.send_group_msg(
+                        self_id=bot.get_self_id(),
+                        group_id=group_id,
+                        message=msg_end.strip()
+                    )
+                except Exception as _:
+                    sv.logger.error(f'bot账号{bot.get_self_id()}不在群{group_id}中，将忽略该消息')
 
 
 @sv.on_rex(r'击剑(路径|路线)( )?(.{0,5})$')
